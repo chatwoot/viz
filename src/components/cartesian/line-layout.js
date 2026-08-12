@@ -68,6 +68,7 @@ export function createLineLayout({
   seriesColor,
   seriesId,
   seriesLabel,
+  seriesPointBorderColor,
   seriesPointColor,
   seriesValueColor,
   seriesValues,
@@ -94,6 +95,9 @@ export function createLineLayout({
     const inputPoints = accessorValue(seriesValues, datum, seriesIndex)
     const color =
       accessorValue(seriesColor, datum, seriesIndex) || defaultSeriesColor(id, seriesIndex)
+    const pointBorderColor =
+      accessorValue(seriesPointBorderColor, datum, seriesIndex) ||
+      'var(--cw-viz-line-point-border-color, #ffffff)'
 
     return {
       color,
@@ -101,6 +105,7 @@ export function createLineLayout({
       id,
       index: seriesIndex,
       label: String(seriesLabel(datum, seriesIndex) ?? id),
+      pointBorderColor,
       pointColor: accessorValue(seriesPointColor, datum, seriesIndex) || color,
       rawPoints: Array.isArray(inputPoints) ? inputPoints : [],
       valueColor: accessorValue(seriesValueColor, datum, seriesIndex) || color,

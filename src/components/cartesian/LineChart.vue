@@ -46,6 +46,10 @@ const props = defineProps({
     type: Function,
     default: (series, index) => series.label ?? series.id ?? `Series ${index + 1}`,
   },
+  seriesPointBorderColor: {
+    type: [Function, String],
+    default: () => (series) => series.pointBorderColor,
+  },
   seriesPointColor: {
     type: [Function, String],
     default: () => (series) => series.pointColor,
@@ -100,6 +104,7 @@ const layout = computed(() =>
     seriesColor: props.seriesColor,
     seriesId: props.seriesId,
     seriesLabel: props.seriesLabel,
+    seriesPointBorderColor: props.seriesPointBorderColor,
     seriesPointColor: props.seriesPointColor,
     seriesValueColor: props.seriesValueColor,
     seriesValues: props.seriesValues,
@@ -255,6 +260,7 @@ onBeforeUnmount(() => {
                 cy="0"
                 :r="pointRadius"
                 :fill="series.pointColor"
+                :stroke="series.pointBorderColor"
               >
                 <title>
                   {{ series.label }}, {{ point.category.label }}: {{ point.formattedValue }}
@@ -320,7 +326,6 @@ onBeforeUnmount(() => {
 }
 
 .cw-viz-line__point {
-  stroke: var(--cw-viz-line-point-border-color, #ffffff);
   stroke-width: var(--cw-viz-line-point-border-width, 3px);
   transform-box: fill-box;
   transform-origin: center;

@@ -11,6 +11,7 @@ const data = {
       id: 'handled',
       label: 'Handled',
       color: '#d9d9e0',
+      pointBorderColor: '#ebebef',
       pointColor: '#b9bbc6',
       valueColor: '#60646c',
       data: [30, 40, 35, 51],
@@ -50,6 +51,7 @@ describe('LineChart', () => {
     const resolved = wrapper.get('[data-series-id="resolved"]')
     expect(handled.get('.cw-viz-line__path').attributes('stroke')).toBe('#d9d9e0')
     expect(handled.get('.cw-viz-line__point').attributes('fill')).toBe('#b9bbc6')
+    expect(handled.get('.cw-viz-line__point').attributes('stroke')).toBe('#ebebef')
     expect(resolved.get('.cw-viz-line__path').attributes('stroke')).toBe('var(--resolved-color)')
     expect(
       wrapper.findAll('.cw-viz-line__path').every((line) => !line.attributes('d').includes('NaN')),

@@ -35,13 +35,13 @@ describe('playground', () => {
     const lineData = JSON.stringify({ categories: ['One'], series: [] })
 
     await wrapper.get('textarea').setValue(lineData)
-    await wrapper.get('.story-select').setValue('sankey')
+    await wrapper.get('a[href="/sankey"]').trigger('click')
 
     expect(wrapper.findComponent({ name: 'SankeyChart' }).exists()).toBe(true)
     expect(wrapper.get('textarea').element.value).toContain('conversations_handled')
     expect(window.location.pathname).toBe('/sankey')
 
-    await wrapper.get('.story-select').setValue('line')
+    await wrapper.get('a[href="/line"]').trigger('click')
 
     expect(wrapper.findComponent({ name: 'LineChart' }).exists()).toBe(true)
     expect(wrapper.get('textarea').element.value).toBe(lineData)
@@ -54,7 +54,7 @@ describe('playground', () => {
     const wrapper = mount(App)
 
     expect(wrapper.findComponent({ name: 'SankeyChart' }).exists()).toBe(true)
-    expect(wrapper.get('.story-select').element.value).toBe('sankey')
+    expect(wrapper.get('a[href="/sankey"]').attributes('aria-current')).toBe('page')
     expect(wrapper.get('textarea').element.value).toBe(DEFAULT_SANKEY_DATA)
   })
 
@@ -118,5 +118,33 @@ describe('playground', () => {
 
     expect(wrapper.findComponent({ name: 'LineChart' }).props('yDomain')).toBeUndefined()
     expect(wrapper.findComponent({ name: 'LineChart' }).props('yTicks')).toBeUndefined()
+  })
+
+  it('renders both saved charts on the home page', () => {
+    const savedLine = { categories: ['Saved'], series: [{ id: 'saved', data: [42] }] }
+    const savedSankey = { nodes: [{ id: 'saved', count: 1 }], links: [] }
+    localStorage.setItem('chatwoot-viz:line-data', JSON.stringify(savedLine))
+    localStorage.setItem('chatwoot-viz:sankey-data', JSON.stringify(savedSankey))
+    window.history.replaceState({}, '', '/')
+
+    const wrapper = mount(App)
+
+    expect(wrapper.findAll('.home-chart h2').map((heading) => heading.text())).toEqual([
+      'Sankey',
+      'Line',
+    ])
+    expect(wrapper.findComponent({ name: 'SankeyChart' }).props('data')).toEqual(savedSankey)
+    expect(wrapper.findComponent({ name: 'LineChart' }).props('data')).toEqual(savedLine)
+    expect(wrapper.find('.editor-panel').exists()).toBe(false)
+    expect(wrapper.get('a[href="/"]').attributes('aria-current')).toBe('page')
+  })
+
+  it('falls back to default chart data when a saved home draft is invalid', () => {
+    localStorage.setItem('chatwoot-viz:sankey-data', '{')
+    window.history.replaceState({}, '', '/')
+
+    const wrapper = mount(App)
+
+    expect(wrapper.findComponent({ name: 'SankeyChart' }).props('data').nodes).toHaveLength(9)
   })
 })

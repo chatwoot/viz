@@ -19,12 +19,13 @@ pnpm install
 pnpm dev
 ```
 
-The Vite playground exposes the line and Sankey stories at `/line` and
-`/sankey`. Its JSON editor validates input as you type and stores a separate
-draft for each chart in localStorage. The editor loads JSON syntax highlighting
-from Shiki's browser CDN, with plain text as its offline fallback. Drag the
-canvas's lower-right corner to test a chart at different container widths and
-heights.
+The Vite playground exposes an overview at `/` and editable chart stories at
+`/line` and `/sankey`. The overview renders both charts from their saved data,
+falling back to the defaults when needed. The JSON editor validates input as
+you type and stores a separate draft for each chart in localStorage. It loads
+JSON syntax highlighting from Shiki's browser CDN, with plain text as its
+offline fallback. Drag the canvas's lower-right corner to test a chart at
+different container widths and heights.
 
 Useful commands:
 
@@ -63,6 +64,7 @@ const data = {
       id: 'handled',
       label: 'Handled',
       color: '#d9d9e0',
+      pointBorderColor: '#ebebef',
       pointColor: '#b9bbc6',
       valueColor: '#60646c',
       data: [30, 40, 35, 51],
@@ -71,6 +73,7 @@ const data = {
       id: 'resolved',
       label: 'Resolved',
       color: '#009688',
+      pointBorderColor: '#ccf3ee',
       data: [12, 29, 23, 39],
     },
   ],
@@ -84,27 +87,28 @@ const data = {
 
 ### Line chart props
 
-| Prop               | Default                                  | Purpose                                                 |
-| ------------------ | ---------------------------------------- | ------------------------------------------------------- |
-| `data`             | required                                 | `{ categories, series }` line data                      |
-| `height`           | `360`                                    | SVG layout height                                       |
-| `width`            | `960`                                    | Initial/SSR width before the container is measured      |
-| `pointRadius`      | `5`                                      | Marker radius                                           |
-| `showValues`       | `true`                                   | Show a formatted value next to each marker              |
-| `yDomain`          | inferred                                 | Optional `[minimum, maximum]` numeric domain            |
-| `yTicks`           | inferred                                 | Optional array of exact y-axis tick values              |
-| `yTickCount`       | `5`                                      | Target tick count when ticks are inferred               |
-| `xInset`           | responsive                               | Horizontal inset for the first and last points          |
-| `categoryLabel`    | `category => category.label ?? category` | Category label accessor                                 |
-| `seriesId`         | `series => series.id`                    | Series id accessor                                      |
-| `seriesLabel`      | label, id, then generated label          | Accessible series label accessor                        |
-| `seriesValues`     | `series => series.data ?? series.values` | Series point-array accessor                             |
-| `pointValue`       | number, `value`, then `y`                | Numeric point accessor                                  |
-| `seriesColor`      | `series => series.color`                 | Line color or accessor                                  |
-| `seriesPointColor` | `series => series.pointColor`            | Marker color or accessor; falls back to the line color  |
-| `seriesValueColor` | value or label color                     | Point-label color or accessor; falls back to line color |
-| `formatValue`      | locale number formatting                 | Tick and point-value formatter                          |
-| `ariaLabel`        | `Line chart`                             | Accessible chart name                                   |
+| Prop                     | Default                                  | Purpose                                                       |
+| ------------------------ | ---------------------------------------- | ------------------------------------------------------------- |
+| `data`                   | required                                 | `{ categories, series }` line data                            |
+| `height`                 | `360`                                    | SVG layout height                                             |
+| `width`                  | `960`                                    | Initial/SSR width before the container is measured            |
+| `pointRadius`            | `5`                                      | Marker radius                                                 |
+| `showValues`             | `true`                                   | Show a formatted value next to each marker                    |
+| `yDomain`                | inferred                                 | Optional `[minimum, maximum]` numeric domain                  |
+| `yTicks`                 | inferred                                 | Optional array of exact y-axis tick values                    |
+| `yTickCount`             | `5`                                      | Target tick count when ticks are inferred                     |
+| `xInset`                 | responsive                               | Horizontal inset for the first and last points                |
+| `categoryLabel`          | `category => category.label ?? category` | Category label accessor                                       |
+| `seriesId`               | `series => series.id`                    | Series id accessor                                            |
+| `seriesLabel`            | label, id, then generated label          | Accessible series label accessor                              |
+| `seriesValues`           | `series => series.data ?? series.values` | Series point-array accessor                                   |
+| `pointValue`             | number, `value`, then `y`                | Numeric point accessor                                        |
+| `seriesColor`            | `series => series.color`                 | Line color or accessor                                        |
+| `seriesPointColor`       | `series => series.pointColor`            | Marker color or accessor; falls back to the line color        |
+| `seriesPointBorderColor` | `series => series.pointBorderColor`      | Marker-ring color or accessor; falls back to the CSS variable |
+| `seriesValueColor`       | value or label color                     | Point-label color or accessor; falls back to line color       |
+| `formatValue`            | locale number formatting                 | Tick and point-value formatter                                |
+| `ariaLabel`              | `Line chart`                             | Accessible chart name                                         |
 
 ### Line chart CSS variables
 

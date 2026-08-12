@@ -7,7 +7,8 @@ import { DEFAULT_LINE_DATA, DEFAULT_SANKEY_DATA } from './sample-data.js'
 const SHIKI_CDN_URL = 'https://esm.sh/shiki@4.4.3'
 const DEFAULT_CANVAS_HEIGHT = 380
 const MIN_CANVAS_HEIGHT = 260
-const charts = [
+const pages = [
+  { id: 'home', label: 'Home', path: '/' },
   { id: 'sankey', label: 'Sankey', path: '/sankey' },
   { id: 'line', label: 'Line', path: '/line' },
 ]
@@ -20,18 +21,32 @@ function dataStorageKey(chart) {
   return `chatwoot-viz:${chart}-data`
 }
 
-function chartFromPath(pathname) {
-  return charts.find((chart) => chart.path === pathname)?.id ?? 'line'
+function pageFromPath(pathname) {
+  return pages.find((page) => page.path === pathname)?.id ?? 'home'
 }
 
-function pathForChart(chartId) {
-  return charts.find((chart) => chart.id === chartId)?.path ?? '/line'
+function pathForPage(pageId) {
+  return pages.find((page) => page.id === pageId)?.path ?? '/'
 }
 
-const activeChart = ref(chartFromPath(window.location.pathname))
-const source = ref(
-  localStorage.getItem(dataStorageKey(activeChart.value)) ?? defaultData[activeChart.value],
-)
+function savedSource(chart) {
+  return localStorage.getItem(dataStorageKey(chart)) ?? defaultData[chart]
+}
+
+function parseSource(source, fallback) {
+  try {
+    return JSON.parse(source)
+  } catch {
+    return JSON.parse(fallback)
+  }
+}
+
+const activePage = ref(pageFromPath(window.location.pathname))
+const drafts = ref({
+  line: savedSource('line'),
+  sankey: savedSource('sankey'),
+})
+const source = ref(activePage.value === 'home' ? drafts.value.line : drafts.value[activePage.value])
 const canvasHeight = ref(DEFAULT_CANVAS_HEIGHT)
 const highlightedCode = ref('')
 const hasHighlighting = ref(false)
@@ -50,20 +65,26 @@ const result = computed(() => {
     return { data: null, error: error.message }
   }
 })
+const homeData = computed(() => ({
+  line: parseSource(drafts.value.line, DEFAULT_LINE_DATA),
+  sankey: parseSource(drafts.value.sankey, DEFAULT_SANKEY_DATA),
+}))
 
-watch(
-  source,
-  (value) => {
-    localStorage.setItem(dataStorageKey(activeChart.value), value)
-  },
-  { immediate: true },
-)
+watch(source, (value) => {
+  if (activePage.value === 'home') return
+  drafts.value[activePage.value] = value
+  localStorage.setItem(dataStorageKey(activePage.value), value)
+})
 
-watch(activeChart, (chart, previousChart) => {
-  localStorage.setItem(dataStorageKey(previousChart), source.value)
-  source.value = localStorage.getItem(dataStorageKey(chart)) ?? defaultData[chart]
+watch(activePage, (page, previousPage) => {
+  if (previousPage !== 'home') {
+    drafts.value[previousPage] = source.value
+    localStorage.setItem(dataStorageKey(previousPage), source.value)
+  }
 
-  const path = pathForChart(chart)
+  if (page !== 'home') source.value = drafts.value[page]
+
+  const path = pathForPage(page)
   if (window.location.pathname !== path) window.history.pushState({}, '', path)
 })
 
@@ -94,7 +115,7 @@ function formatData() {
 }
 
 function resetData() {
-  source.value = defaultData[activeChart.value]
+  if (activePage.value !== 'home') source.value = defaultData[activePage.value]
 }
 
 function fitCanvas() {
@@ -110,14 +131,18 @@ function updateCanvasHeight(height) {
   canvasHeight.value = Math.max(Math.round(height), MIN_CANVAS_HEIGHT)
 }
 
-function syncChartFromPath() {
-  activeChart.value = chartFromPath(window.location.pathname)
+function navigateTo(page) {
+  activePage.value = page
+}
+
+function syncPageFromPath() {
+  activePage.value = pageFromPath(window.location.pathname)
 }
 
 onMounted(() => {
-  const activePath = pathForChart(activeChart.value)
+  const activePath = pathForPage(activePage.value)
   if (window.location.pathname !== activePath) window.history.replaceState({}, '', activePath)
-  window.addEventListener('popstate', syncChartFromPath)
+  window.addEventListener('popstate', syncPageFromPath)
 
   import(/* @vite-ignore */ SHIKI_CDN_URL)
     .then((shiki) => {
@@ -150,7 +175,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  window.removeEventListener('popstate', syncChartFromPath)
+  window.removeEventListener('popstate', syncPageFromPath)
   highlightRequest += 1
   clearTimeout(highlightTimer)
   canvasObserver?.disconnect()
@@ -164,17 +189,36 @@ watch(source, scheduleHighlight)
   <main class="playground">
     <header class="playground__header">
       <div class="brand">
-        <strong>@chatwoot/viz</strong>
-        <span aria-hidden="true">/</span>
-        <select v-model="activeChart" class="story-select" aria-label="Chart story">
-          <option v-for="chart in charts" :key="chart.id" :value="chart.id">
-            {{ chart.label }}
-          </option>
-        </select>
+        <strong>chatwoot/viz</strong>
       </div>
+      <nav class="story-nav" aria-label="Chart stories">
+        <a
+          v-for="page in pages"
+          :key="page.id"
+          class="story-nav__link"
+          :class="{ 'story-nav__link--active': activePage === page.id }"
+          :href="page.path"
+          :aria-current="activePage === page.id ? 'page' : undefined"
+          @click.prevent="navigateTo(page.id)"
+        >
+          {{ page.label }}
+        </a>
+      </nav>
     </header>
 
-    <section class="workspace">
+    <section v-if="activePage === 'home'" class="home-page">
+      <section class="home-chart" aria-labelledby="home-sankey-title">
+        <h2 id="home-sankey-title">Sankey</h2>
+        <SankeyChart :data="homeData.sankey" aria-label="Conversation resolution flow" />
+      </section>
+
+      <section class="home-chart" aria-labelledby="home-line-title">
+        <h2 id="home-line-title">Line</h2>
+        <LineChart :data="homeData.line" aria-label="Conversation trends by week" />
+      </section>
+    </section>
+
+    <section v-else class="workspace">
       <aside class="editor-panel">
         <header class="panel-toolbar">
           <p class="panel-title">Data</p>
@@ -233,7 +277,7 @@ watch(source, scheduleHighlight)
         <div class="canvas-stage">
           <div ref="canvas-frame" class="canvas-frame">
             <LineChart
-              v-if="result.data && activeChart === 'line'"
+              v-if="result.data && activePage === 'line'"
               :data="result.data"
               :height="canvasHeight"
               aria-label="Conversation trends by week"
@@ -244,9 +288,7 @@ watch(source, scheduleHighlight)
               :height="canvasHeight"
               aria-label="Conversation resolution flow"
             />
-            <div v-else class="empty-state">
-              Fix the JSON to render the {{ activeChart }} chart.
-            </div>
+            <div v-else class="empty-state">Fix the JSON to render the {{ activePage }} chart.</div>
           </div>
         </div>
       </section>

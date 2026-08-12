@@ -26,7 +26,6 @@ body,
 }
 
 button,
-select,
 textarea {
   font: inherit;
 }
@@ -47,7 +46,7 @@ button:hover {
 }
 
 button:focus-visible,
-select:focus-visible,
+a:focus-visible,
 textarea:focus-visible {
   outline: 2px solid #3e63dd;
   outline-offset: -2px;
@@ -71,21 +70,14 @@ textarea:focus-visible {
   display: flex;
   min-height: 48px;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  justify-content: flex-start;
+  gap: 1.25rem;
   padding: 0 1rem;
   border-bottom: 1px solid #e8e8ec;
   background: #ffffff;
 }
 
 .brand {
-  display: flex;
-  align-items: center;
-}
-
-.brand {
-  gap: 0.4rem;
-  color: #60646c;
   font-size: 0.8125rem;
 }
 
@@ -93,14 +85,63 @@ textarea:focus-visible {
   color: #1c2024;
 }
 
-.story-select {
-  min-height: 28px;
-  padding: 0.2rem 1.6rem 0.2rem 0.45rem;
-  border: 1px solid #d9d9e0;
+.story-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.story-nav__link {
+  padding: 0.35rem 0.55rem;
   border-radius: 4px;
-  color: #1c2024;
-  background: #ffffff;
+  color: #60646c;
   font-size: 0.75rem;
+  text-decoration: none;
+}
+
+.story-nav__link:hover {
+  color: #1c2024;
+  background: #f5f5f7;
+}
+
+.story-nav__link--active {
+  color: #1c2024;
+  background: #ebebef;
+}
+
+.home-page {
+  display: grid;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem;
+  gap: 1.5rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.home-chart {
+  min-width: 0;
+  padding: 1.25rem;
+  border: 1px solid #e0e1e6;
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.home-chart h2 {
+  margin: 0 0 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #ebebef;
+  color: #1c2024;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.home-chart .cw-viz-sankey,
+.home-chart .cw-viz-line {
+  --sankey-captain-color: #038574;
+  --sankey-handled-color: #4747c2;
+  --cw-viz-sankey-label-color: #60646c;
+  --cw-viz-sankey-label-value-color: #1c2024;
+  --cw-viz-line-label-color: #60646c;
 }
 
 .workspace {
@@ -340,6 +381,10 @@ textarea:focus-visible {
     flex-direction: column;
   }
 
+  .home-page {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .editor-panel {
     min-height: 55vh;
     border-bottom: 1px solid #e8e8ec;
@@ -359,7 +404,15 @@ textarea:focus-visible {
     padding: 0 0.65rem;
   }
 
-  .brand strong {
-    display: none;
+  .home-page {
+    padding: 1.25rem 0.75rem;
+  }
+
+  .home-chart {
+    padding: 1rem;
+  }
+
+  .story-nav__link {
+    padding-inline: 0.4rem;
   }
 }
