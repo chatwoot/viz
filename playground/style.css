@@ -265,6 +265,37 @@ textarea:focus-visible {
   margin: 0 0 0.9rem;
 }
 
+.markdown-body details {
+  margin: 0 0 0.65rem;
+  border: 1px solid #e8e8ec;
+  border-radius: 4px;
+  background: #ffffff;
+}
+
+.markdown-body summary {
+  padding: 0.6rem 0.7rem;
+  color: #1c2024;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.markdown-body details[open] summary {
+  border-bottom: 1px solid #e8e8ec;
+}
+
+.markdown-body details > :not(summary) {
+  margin-right: 0.7rem;
+  margin-left: 0.7rem;
+}
+
+.markdown-body details > :nth-child(2) {
+  margin-top: 0.7rem;
+}
+
+.markdown-body details > :last-child {
+  margin-bottom: 0.7rem;
+}
+
 .markdown-body ul {
   padding-left: 1.2rem;
 }

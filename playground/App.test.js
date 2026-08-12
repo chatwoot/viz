@@ -69,7 +69,10 @@ describe('playground', () => {
 
     expect(toggle.attributes('aria-expanded')).toBe('true')
     expect(wrapper.get('.docs-toolbar .panel-title').text()).toBe('Line Chart')
-    expect(wrapper.get('.docs-panel pre code').classes()).toContain('language-json')
+    expect(wrapper.get('.docs-panel pre').classes()).toContain('shiki')
+    expect(wrapper.get('.docs-panel pre code').text()).toContain('import { LineChart }')
+    expect(wrapper.findAll('.docs-panel details')).toHaveLength(1)
+    expect(wrapper.findAll('.docs-panel pre')).toHaveLength(4)
 
     await wrapper.get('a[href="/sankey"]').trigger('click')
 
