@@ -1,36 +1,11 @@
-import { createCartesianLayout, finiteNumber } from './cartesian-layout.js'
-
-const AXIS_CHARACTER_WIDTH = 7
-
-function accessorValue(accessor, datum, index) {
-  return typeof accessor === 'function' ? accessor(datum, index) : accessor
-}
-
-function formattedValue(formatter, value, datum, series) {
-  const localeValue = Number(value).toLocaleString()
-
-  if (typeof formatter === 'function') return String(formatter(value, datum, series))
-  if (typeof formatter !== 'string') return localeValue
-  if (formatter.includes('{value}')) return formatter.replaceAll('{value}', localeValue)
-  return `${localeValue}${formatter}`
-}
-
-function cssIdentifier(value) {
-  return String(value)
-    .toLowerCase()
-    .replace(/[^a-z0-9_-]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-}
-
-function defaultSeriesColor(id, index) {
-  const identifier = cssIdentifier(id)
-  const fallback = index === 0 ? '#8b8d98' : index === 1 ? '#009688' : '#3e63dd'
-  const indexVariable = `var(--cw-viz-line-series-${index}-color, ${fallback})`
-
-  return identifier
-    ? `var(--cw-viz-line-series-${identifier}-color, ${indexVariable})`
-    : indexVariable
-}
+import {
+  accessorValue,
+  createCartesianLayout,
+  finiteNumber,
+  formatChartValue,
+  seriesCssColor,
+  trimAxisLabel,
+} from './cartesian-layout.js'
 
 function linePath(points) {
   let isSegmentOpen = false
@@ -48,13 +23,6 @@ function linePath(points) {
     })
     .filter(Boolean)
     .join(' ')
-}
-
-function trimLabel(label, maximumWidth) {
-  const maximumCharacters = Math.max(Math.floor(maximumWidth / AXIS_CHARACTER_WIDTH), 1)
-  if (label.length <= maximumCharacters) return label
-  if (maximumCharacters <= 1) return '…'
-  return `${label.slice(0, maximumCharacters - 1).trimEnd()}…`
 }
 
 function labelY(point, seriesIndex, plot) {
@@ -103,7 +71,7 @@ export function createLineLayout({
     const id = seriesId(datum, seriesIndex) ?? seriesIndex
     const inputPoints = accessorValue(seriesValues, datum, seriesIndex)
     const color =
-      accessorValue(seriesColor, datum, seriesIndex) || defaultSeriesColor(id, seriesIndex)
+      accessorValue(seriesColor, datum, seriesIndex) || seriesCssColor('line', id, seriesIndex)
     const pointBorderColor =
       accessorValue(seriesPointBorderColor, datum, seriesIndex) ||
       'var(--cw-viz-line-point-border-color, #ffffff)'
@@ -139,7 +107,7 @@ export function createLineLayout({
 
   categories.forEach((category, index) => {
     category.x = cartesian.xPositions[index]
-    category.displayLabel = trimLabel(
+    category.displayLabel = trimAxisLabel(
       category.label,
       Math.max(cartesian.xStep || cartesian.plot.width, 1) - 12,
     )
@@ -160,7 +128,7 @@ export function createLineLayout({
         x: category.x,
         y: cartesian.mapY(value),
       }
-      point.formattedValue = formattedValue(formatValue, value, datum, series.datum)
+      point.formattedValue = formatChartValue(formatValue, value, datum, series.datum)
       point.labelY = labelY(point, series.index, cartesian.plot)
       return point
     })
@@ -174,7 +142,7 @@ export function createLineLayout({
     plot: cartesian.plot,
     series: normalizedSeries,
     yTicks: cartesian.yTicks.map((tick) => ({
-      formattedValue: formattedValue(formatValue, tick.value),
+      formattedValue: formatChartValue(formatValue, tick.value),
       value: tick.value,
       y: tick.y,
     })),

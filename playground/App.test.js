@@ -2,7 +2,7 @@ import { mount } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import App from './App.vue'
-import { DEFAULT_SANKEY_DATA } from './sample-data.js'
+import { DEFAULT_BAR_DATA, DEFAULT_SANKEY_DATA } from './sample-data.js'
 
 describe('playground', () => {
   beforeEach(() => {
@@ -56,6 +56,29 @@ describe('playground', () => {
     expect(wrapper.findComponent({ name: 'SankeyChart' }).exists()).toBe(true)
     expect(wrapper.get('a[href="/sankey"]').attributes('aria-current')).toBe('page')
     expect(wrapper.get('textarea').element.value).toBe(DEFAULT_SANKEY_DATA)
+  })
+
+  it('controls stacked and time-series bar options from the preview toolbar', async () => {
+    window.history.replaceState({}, '', '/bar')
+
+    const wrapper = mount(App)
+
+    expect(wrapper.findComponent({ name: 'BarChart' }).exists()).toBe(true)
+    expect(wrapper.get('a[href="/bar"]').attributes('aria-current')).toBe('page')
+    expect(wrapper.get('textarea').element.value).toBe(DEFAULT_BAR_DATA)
+    expect(wrapper.findComponent({ name: 'BarChart' }).props('stacked')).toBe(false)
+    expect(wrapper.findComponent({ name: 'BarChart' }).props('timeseries')).toBe(false)
+
+    const options = wrapper.findAll('.chart-option input')
+    await options[0].setValue(true)
+
+    expect(wrapper.findComponent({ name: 'BarChart' }).props('stacked')).toBe(true)
+    expect(JSON.parse(wrapper.get('textarea').element.value).stacked).toBe(true)
+
+    await options[1].setValue(true)
+
+    expect(wrapper.findComponent({ name: 'BarChart' }).props('timeseries')).toBe(true)
+    expect(JSON.parse(wrapper.get('textarea').element.value).timeseries).toBe(true)
   })
 
   it('toggles rendered documentation for the active chart', async () => {
@@ -182,9 +205,11 @@ describe('playground', () => {
     expect(wrapper.findComponent({ name: 'LineChart' }).props('yTicks')).toBeUndefined()
   })
 
-  it('renders both saved charts on the home page', () => {
+  it('renders all saved charts on the home page', () => {
+    const savedBar = { categories: ['Saved'], series: [{ id: 'saved', data: [18] }] }
     const savedLine = { categories: ['Saved'], series: [{ id: 'saved', data: [42] }] }
     const savedSankey = { nodes: [{ id: 'saved', count: 1 }], links: [] }
+    localStorage.setItem('chatwoot-viz:bar-data', JSON.stringify(savedBar))
     localStorage.setItem('chatwoot-viz:line-data', JSON.stringify(savedLine))
     localStorage.setItem('chatwoot-viz:sankey-data', JSON.stringify(savedSankey))
     window.history.replaceState({}, '', '/')
@@ -194,9 +219,11 @@ describe('playground', () => {
     expect(wrapper.findAll('.home-chart h2').map((heading) => heading.text())).toEqual([
       'Sankey',
       'Line',
+      'Bar',
     ])
     expect(wrapper.findComponent({ name: 'SankeyChart' }).props('data')).toEqual(savedSankey)
     expect(wrapper.findComponent({ name: 'LineChart' }).props('data')).toEqual(savedLine)
+    expect(wrapper.findComponent({ name: 'BarChart' }).props('data')).toEqual(savedBar)
     expect(wrapper.find('.editor-panel').exists()).toBe(false)
     expect(wrapper.get('a[href="/"]').attributes('aria-current')).toBe('page')
   })

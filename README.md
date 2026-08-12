@@ -2,9 +2,9 @@
 
 Tiny, responsive SVG chart components for Vue 3.5 and newer, built for Chatwoot.
 
-The library currently includes a multi-series line chart and a dependency-free
-Sankey chart. Shared Cartesian scale helpers back the line chart and are ready
-to be reused by bar charts.
+The library currently includes grouped and stacked bar charts, a multi-series
+line chart, and a dependency-free Sankey chart. The Cartesian charts share the
+same responsive scale, axis, accessor, and formatting helpers.
 
 ## Requirements
 
@@ -20,7 +20,7 @@ pnpm dev
 ```
 
 The Vite playground exposes an overview at `/` and editable chart stories at
-`/line` and `/sankey`. The overview renders both charts from their saved data,
+`/bar`, `/line`, and `/sankey`. The overview renders every chart from its saved data,
 falling back to the defaults when needed. The JSON editor validates input as
 you type and stores a separate draft for each chart in localStorage. It loads
 JSON syntax highlighting from Shiki's browser CDN, with plain text as its
@@ -47,6 +47,85 @@ Import the stylesheet once in the consuming application:
 ```js
 import '@chatwoot/viz/style.css'
 ```
+
+## Bar chart
+
+The bar chart uses the same `{ categories, series }` shape as the line chart.
+Multiple series render side by side by default. Add `stacked` to accumulate
+positive and negative values independently within each category.
+
+```vue
+<script setup>
+import { BarChart } from '@chatwoot/viz'
+
+const data = {
+  categories: ['Jun 01 - 07', 'Jun 08 - 14', 'Jun 15 - 21'],
+  series: [
+    { id: 'automated', label: 'Automated', color: '#009688', data: [38, 48, 42] },
+    { id: 'team', label: 'Team', color: '#b9bbc6', data: [24, 31, 27] },
+  ],
+}
+</script>
+
+<template>
+  <BarChart :data="data" aria-label="Conversation volume by week" />
+  <BarChart :data="data" stacked aria-label="Stacked conversation volume by week" />
+</template>
+```
+
+The inferred y-axis always includes zero. In stacked mode it uses category
+totals, not individual segments. `formatValue` applies to ticks, optional value
+labels, and the rich HTML tooltip.
+
+### Bar chart props
+
+| Prop               | Default                                  | Purpose                                                       |
+| ------------------ | ---------------------------------------- | ------------------------------------------------------------- |
+| `data`             | required                                 | `{ categories, series }` bar data                             |
+| `stacked`          | `false`                                  | Stack series instead of placing them side by side             |
+| `timeseries`       | `false`                                  | Thin dense time labels while retaining the first and last     |
+| `height`           | `360`                                    | SVG layout height                                             |
+| `width`            | `960`                                    | Initial/SSR width before the container is measured            |
+| `barRadius`        | `6`                                      | Radius applied to the exposed end of each bar or stack        |
+| `barGap`           | `6`                                      | Gap between grouped bars                                      |
+| `maxBarWidth`      | `48`                                     | Maximum width of a grouped bar or complete stack              |
+| `showValues`       | `false`                                  | Show formatted values on or beside bars                       |
+| `showTooltip`      | `true`                                   | Show an HTML tooltip with every series for a category         |
+| `yDomain`          | inferred                                 | Optional `[minimum, maximum]` numeric domain                  |
+| `yTicks`           | inferred                                 | Optional array of exact y-axis tick values                    |
+| `yTickCount`       | `5`                                      | Target tick count when ticks are inferred                     |
+| `categoryLabel`    | `category => category.label ?? category` | Category label accessor                                       |
+| `seriesId`         | `series => series.id`                    | Series id accessor                                            |
+| `seriesLabel`      | label, id, then generated label          | Accessible series label accessor                              |
+| `seriesValues`     | `series => series.data ?? series.values` | Series point-array accessor                                   |
+| `pointValue`       | number, `value`, then `y`                | Numeric point accessor                                        |
+| `seriesColor`      | `series => series.color`                 | Bar color or accessor                                         |
+| `seriesValueColor` | value or label color                     | Optional outside-value-label color or accessor                |
+| `formatValue`      | locale number formatting                 | String template/suffix or function for ticks and point values |
+| `ariaLabel`        | `Bar chart`                              | Accessible chart name                                         |
+
+### Bar chart CSS variables
+
+```css
+.cw-viz-bar {
+  --cw-viz-bar-axis-color: #d9d9e0;
+  --cw-viz-bar-zero-line-color: #b9bbc6;
+  --cw-viz-bar-label-color: #60646c;
+  --cw-viz-bar-value-color: #60646c;
+  --cw-viz-bar-value-inside-color: #ffffff;
+  --cw-viz-bar-axis-font-size: 12px;
+  --cw-viz-bar-value-font-size: 12px;
+  --cw-viz-bar-tooltip-background: #ffffff;
+  --cw-viz-bar-tooltip-border-color: #e0e1e6;
+  --cw-viz-bar-tooltip-color: #1c2024;
+  --cw-viz-bar-tooltip-label-color: #60646c;
+  --cw-viz-bar-tooltip-shadow: 0 4px 16px rgb(0 0 0 / 10%);
+  --cw-viz-bar-tooltip-font-size: 12px;
+}
+```
+
+Series fallback colors can be set by index or id, for example
+`--cw-viz-bar-series-0-color` or `--cw-viz-bar-series-automated-color`.
 
 ## Line chart
 

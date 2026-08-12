@@ -1,12 +1,14 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue'
 
-import { LineChart, SankeyChart } from '../src/index.js'
+import { BarChart, LineChart, SankeyChart } from '../src/index.js'
+import BarDocs from './docs/bar.md'
+import barDocsSource from './docs/bar.md?raw'
 import LineDocs from './docs/line.md'
 import lineDocsSource from './docs/line.md?raw'
 import SankeyDocs from './docs/sankey.md'
 import sankeyDocsSource from './docs/sankey.md?raw'
-import { DEFAULT_LINE_DATA, DEFAULT_SANKEY_DATA } from './sample-data.js'
+import { DEFAULT_BAR_DATA, DEFAULT_LINE_DATA, DEFAULT_SANKEY_DATA } from './sample-data.js'
 
 const SHIKI_CDN_URL = 'https://esm.sh/shiki@4.4.3'
 const DEFAULT_CANVAS_HEIGHT = 380
@@ -18,12 +20,15 @@ const pages = [
   { id: 'home', label: 'Home', path: '/' },
   { id: 'sankey', label: 'Sankey', path: '/sankey' },
   { id: 'line', label: 'Line', path: '/line' },
+  { id: 'bar', label: 'Bar', path: '/bar' },
 ]
 const defaultData = {
+  bar: DEFAULT_BAR_DATA,
   line: DEFAULT_LINE_DATA,
   sankey: DEFAULT_SANKEY_DATA,
 }
 const docs = {
+  bar: { component: BarDocs, source: barDocsSource, title: 'Bar Chart' },
   line: { component: LineDocs, source: lineDocsSource, title: 'Line Chart' },
   sankey: { component: SankeyDocs, source: sankeyDocsSource, title: 'Sankey Chart' },
 }
@@ -54,6 +59,7 @@ function parseSource(source, fallback) {
 
 const activePage = ref(pageFromPath(window.location.pathname))
 const drafts = ref({
+  bar: savedSource('bar'),
   line: savedSource('line'),
   sankey: savedSource('sankey'),
 })
@@ -82,6 +88,7 @@ const result = computed(() => {
   }
 })
 const homeData = computed(() => ({
+  bar: parseSource(drafts.value.bar, DEFAULT_BAR_DATA),
   line: parseSource(drafts.value.line, DEFAULT_LINE_DATA),
   sankey: parseSource(drafts.value.sankey, DEFAULT_SANKEY_DATA),
 }))
@@ -135,6 +142,19 @@ function formatData() {
 
 function resetData() {
   if (activePage.value !== 'home') source.value = defaultData[activePage.value]
+}
+
+function setBarOption(option, enabled) {
+  if (activePage.value !== 'bar' || !result.value.data) return
+
+  source.value = JSON.stringify(
+    {
+      ...result.value.data,
+      [option]: enabled,
+    },
+    null,
+    2,
+  )
 }
 
 function fitCanvas() {
@@ -297,6 +317,16 @@ watch(source, scheduleHighlight)
         <h2 id="home-line-title">Line</h2>
         <LineChart :data="homeData.line" aria-label="Conversation trends by week" />
       </section>
+
+      <section class="home-chart" aria-labelledby="home-bar-title">
+        <h2 id="home-bar-title">Bar</h2>
+        <BarChart
+          :data="homeData.bar"
+          :stacked="Boolean(homeData.bar.stacked)"
+          :timeseries="Boolean(homeData.bar.timeseries)"
+          aria-label="Conversation volume by week"
+        />
+      </section>
     </section>
 
     <section
@@ -353,6 +383,26 @@ watch(source, scheduleHighlight)
         <header class="panel-toolbar canvas-toolbar">
           <p class="panel-title">Preview</p>
           <div class="canvas-actions">
+            <div v-if="activePage === 'bar'" class="chart-options" aria-label="Bar chart options">
+              <label class="chart-option">
+                <input
+                  type="checkbox"
+                  :checked="Boolean(result.data?.stacked)"
+                  :disabled="!result.data"
+                  @change="setBarOption('stacked', $event.currentTarget.checked)"
+                />
+                Stacked
+              </label>
+              <label class="chart-option">
+                <input
+                  type="checkbox"
+                  :checked="Boolean(result.data?.timeseries)"
+                  :disabled="!result.data"
+                  @change="setBarOption('timeseries', $event.currentTarget.checked)"
+                />
+                Time series
+              </label>
+            </div>
             <span class="panel-hint">Resize from the lower-right corner</span>
             <button type="button" class="button--quiet button--small" @click="fitCanvas">
               Reset size
@@ -368,8 +418,16 @@ watch(source, scheduleHighlight)
               :height="canvasHeight"
               aria-label="Conversation trends by week"
             />
+            <BarChart
+              v-else-if="result.data && activePage === 'bar'"
+              :data="result.data"
+              :height="canvasHeight"
+              :stacked="Boolean(result.data.stacked)"
+              :timeseries="Boolean(result.data.timeseries)"
+              aria-label="Conversation volume by week"
+            />
             <SankeyChart
-              v-else-if="result.data"
+              v-else-if="result.data && activePage === 'sankey'"
               :data="result.data"
               :height="canvasHeight"
               aria-label="Conversation resolution flow"

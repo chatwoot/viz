@@ -52,6 +52,7 @@ button:hover {
 
 button:focus-visible,
 a:focus-visible,
+input:focus-visible,
 textarea:focus-visible {
   outline: 2px solid #3e63dd;
   outline-offset: -2px;
@@ -125,7 +126,7 @@ textarea:focus-visible {
   margin: 0 auto;
   padding: 2rem;
   gap: 1.5rem;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
   overflow: auto;
 }
 
@@ -147,12 +148,14 @@ textarea:focus-visible {
 }
 
 .home-chart .cw-viz-sankey,
-.home-chart .cw-viz-line {
+.home-chart .cw-viz-line,
+.home-chart .cw-viz-bar {
   --sankey-captain-color: #038574;
   --sankey-handled-color: #4747c2;
   --cw-viz-sankey-label-color: #60646c;
   --cw-viz-sankey-label-value-color: #1c2024;
   --cw-viz-line-label-color: #60646c;
+  --cw-viz-bar-label-color: #60646c;
 }
 
 .workspace {
@@ -464,6 +467,29 @@ textarea:focus-visible {
   gap: 0.75rem;
 }
 
+.chart-options,
+.chart-option {
+  display: flex;
+  align-items: center;
+}
+
+.chart-options {
+  gap: 0.75rem;
+}
+
+.chart-option {
+  gap: 0.35rem;
+  color: #60646c;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.chart-option input {
+  width: 0.875rem;
+  height: 0.875rem;
+  margin: 0;
+}
+
 .chart-panel {
   background: #f8f8fa;
 }
@@ -495,6 +521,7 @@ textarea:focus-visible {
   background: #ffffff;
 }
 
+.canvas-frame .cw-viz-bar,
 .canvas-frame .cw-viz-line,
 .canvas-frame .cw-viz-sankey {
   width: 100%;
@@ -505,6 +532,10 @@ textarea:focus-visible {
   --cw-viz-line-label-color: #60646c;
 }
 
+.canvas-frame .cw-viz-bar {
+  --cw-viz-bar-label-color: #60646c;
+}
+
 .canvas-frame .cw-viz-sankey {
   --sankey-captain-color: #038574;
   --sankey-handled-color: #4747c2;
@@ -512,6 +543,7 @@ textarea:focus-visible {
   --cw-viz-sankey-label-value-color: #1c2024;
 }
 
+.canvas-frame .cw-viz-bar__svg,
 .canvas-frame .cw-viz-line__svg,
 .canvas-frame .cw-viz-sankey__svg {
   height: 100%;

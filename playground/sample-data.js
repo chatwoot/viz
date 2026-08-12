@@ -37,6 +37,43 @@ const lineData = {
   ],
 }
 
+const barData = {
+  stacked: false,
+  timeseries: false,
+  categories: [
+    {
+      id: 'jun-01-07',
+      label: 'Jun 01 - 07',
+    },
+    {
+      id: 'jun-08-14',
+      label: 'Jun 08 - 14',
+    },
+    {
+      id: 'jun-15-21',
+      label: 'Jun 15 - 21',
+    },
+    {
+      id: 'jun-22-30',
+      label: 'Jun 22 - 30',
+    },
+  ],
+  series: [
+    {
+      id: 'automated',
+      label: 'Automated',
+      color: '#009688',
+      data: [38, 48, 42, 55],
+    },
+    {
+      id: 'team',
+      label: 'Team',
+      color: '#b9bbc6',
+      data: [24, 31, 27, 36],
+    },
+  ],
+}
+
 const sankeyData = {
   nodes: [
     {
@@ -106,5 +143,6 @@ const sankeyData = {
   ],
 }
 
+export const DEFAULT_BAR_DATA = JSON.stringify(barData, null, 2)
 export const DEFAULT_LINE_DATA = JSON.stringify(lineData, null, 2)
 export const DEFAULT_SANKEY_DATA = JSON.stringify(sankeyData, null, 2)

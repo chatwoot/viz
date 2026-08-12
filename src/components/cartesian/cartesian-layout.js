@@ -1,4 +1,43 @@
 const DEFAULT_TICK_COUNT = 5
+const AXIS_CHARACTER_WIDTH = 7
+
+export function accessorValue(accessor, datum, index) {
+  return typeof accessor === 'function' ? accessor(datum, index) : accessor
+}
+
+export function formatChartValue(formatter, value, datum, series) {
+  const localeValue = Number(value).toLocaleString()
+
+  if (typeof formatter === 'function') return String(formatter(value, datum, series))
+  if (typeof formatter !== 'string') return localeValue
+  if (formatter.includes('{value}')) return formatter.replaceAll('{value}', localeValue)
+  return `${localeValue}${formatter}`
+}
+
+function cssIdentifier(value) {
+  return String(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
+export function seriesCssColor(chart, id, index) {
+  const identifier = cssIdentifier(id)
+  const fallbacks = ['#8b8d98', '#009688', '#3e63dd', '#915930', '#ca244e', '#7c66dc']
+  const fallback = fallbacks[index % fallbacks.length]
+  const indexVariable = `var(--cw-viz-${chart}-series-${index}-color, ${fallback})`
+
+  return identifier
+    ? `var(--cw-viz-${chart}-series-${identifier}-color, ${indexVariable})`
+    : indexVariable
+}
+
+export function trimAxisLabel(label, maximumWidth) {
+  const maximumCharacters = Math.max(Math.floor(maximumWidth / AXIS_CHARACTER_WIDTH), 1)
+  if (label.length <= maximumCharacters) return label
+  if (maximumCharacters <= 1) return '…'
+  return `${label.slice(0, maximumCharacters - 1).trimEnd()}…`
+}
 
 export function finiteNumber(value, fallback = undefined) {
   const number = Number(value)
