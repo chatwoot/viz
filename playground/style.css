@@ -157,14 +157,16 @@ button:hover {
   display: grid;
   place-items: center;
   overflow: auto;
+  --sankey-captain-color: #038574;
+  --sankey-handled-color: #4747c2;
   background-image: radial-gradient(#dfe3e8 1px, transparent 1px);
   background-size: 20px 20px;
 }
 
-.chart-panel svg {
+.chart-panel .cw-viz-sankey {
   width: 100%;
-  height: auto;
-  color: #66788a;
+  --cw-viz-sankey-label-color: #60646c;
+  --cw-viz-sankey-label-value-color: #1c2024;
   background: rgb(255 255 255 / 92%);
   border: 1px solid #eef1f4;
 }

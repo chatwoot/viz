@@ -1,1 +1,1 @@
-export { default as DummyChart } from './components/DummyChart.vue'
+export { default as SankeyChart } from './components/SankeyChart.vue'

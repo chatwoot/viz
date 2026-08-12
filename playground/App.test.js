@@ -23,6 +23,6 @@ describe('playground', () => {
     await wrapper.get('textarea').setValue('{')
 
     expect(wrapper.get('#json-status').text()).toContain('Invalid JSON')
-    expect(wrapper.findComponent({ name: 'DummyChart' }).exists()).toBe(false)
+    expect(wrapper.findComponent({ name: 'SankeyChart' }).exists()).toBe(false)
   })
 })

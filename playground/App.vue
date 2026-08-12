@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 
-import { DummyChart } from '../src/index.js'
+import { SankeyChart } from '../src/index.js'
 import { DEFAULT_DATA } from './sample-data.js'
 
 const STORAGE_KEY = 'chatwoot-viz:sankey-data'
@@ -39,8 +39,8 @@ function resetData() {
     <header class="playground__header">
       <div>
         <p class="eyebrow">@chatwoot/viz</p>
-        <h1>JSON to SVG playground</h1>
-        <p>Edit JSON and see a dummy SVG update. Your input survives reloads.</p>
+        <h1>Sankey chart playground</h1>
+        <p>Edit the nodes and links to see the responsive SVG update.</p>
       </div>
       <div class="actions">
         <button type="button" @click="formatData">Format JSON</button>
@@ -68,8 +68,12 @@ function resetData() {
       </div>
 
       <div class="chart-panel">
-        <DummyChart v-if="result.data" :data="result.data" />
-        <div v-else class="empty-state">Fix the JSON to render the dummy chart.</div>
+        <SankeyChart
+          v-if="result.data"
+          :data="result.data"
+          aria-label="Conversation resolution flow"
+        />
+        <div v-else class="empty-state">Fix the JSON to render the Sankey chart.</div>
       </div>
     </section>
   </main>
