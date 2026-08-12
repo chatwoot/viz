@@ -102,6 +102,7 @@ locale-formatted number within a template. For custom logic, pass a function:
 | `width`                  | `960`                                    | Initial/SSR width before the container is measured            |
 | `pointRadius`            | `5`                                      | Marker radius                                                 |
 | `showValues`             | `true`                                   | Show a formatted value next to each marker                    |
+| `showTooltip`            | `true`                                   | Show an HTML tooltip with all series values for a category    |
 | `yDomain`                | inferred                                 | Optional `[minimum, maximum]` numeric domain                  |
 | `yTicks`                 | inferred                                 | Optional array of exact y-axis tick values                    |
 | `yTickCount`             | `5`                                      | Target tick count when ticks are inferred                     |
@@ -129,6 +130,12 @@ locale-formatted number within a template. For custom logic, pass a function:
   --cw-viz-line-point-border-width: 6px;
   --cw-viz-line-axis-font-size: 12px;
   --cw-viz-line-value-font-size: 12px;
+  --cw-viz-line-tooltip-background: #ffffff;
+  --cw-viz-line-tooltip-border-color: #e0e1e6;
+  --cw-viz-line-tooltip-color: #1c2024;
+  --cw-viz-line-tooltip-label-color: #60646c;
+  --cw-viz-line-tooltip-shadow: 0 4px 16px rgb(0 0 0 / 10%);
+  --cw-viz-line-tooltip-font-size: 12px;
 }
 ```
 

@@ -103,6 +103,38 @@ describe('LineChart', () => {
     ).toBe(true)
   })
 
+  it('renders a rich HTML tooltip with every series for the hovered category', async () => {
+    const wrapper = mount(LineChart, { props: { data, width: 720 } })
+    const resolvedPoint = wrapper
+      .get('[data-series-id="resolved"]')
+      .findAll('.cw-viz-line__point-group')[2]
+
+    await resolvedPoint.trigger('pointerenter')
+
+    const tooltip = wrapper.get('div[role="tooltip"]')
+    expect(tooltip.get('.cw-viz-line__tooltip-title').text()).toBe('Jun 15 - 21')
+    expect(tooltip.findAll('.cw-viz-line__tooltip-row')).toHaveLength(2)
+    expect(tooltip.text()).toContain('Handled')
+    expect(tooltip.text()).toContain('35')
+    expect(tooltip.text()).toContain('Resolved')
+    expect(tooltip.text()).toContain('23')
+    expect(tooltip.findAll('svg')).toHaveLength(0)
+    expect(wrapper.findAll('svg title')).toHaveLength(0)
+
+    await resolvedPoint.trigger('pointerleave')
+    expect(wrapper.find('[role="tooltip"]').exists()).toBe(false)
+  })
+
+  it('can disable the tooltip', async () => {
+    const wrapper = mount(LineChart, { props: { data, showTooltip: false } })
+    const point = wrapper.get('.cw-viz-line__point-group')
+
+    await point.trigger('pointerenter')
+
+    expect(wrapper.find('[role="tooltip"]').exists()).toBe(false)
+    expect(point.attributes('tabindex')).toBeUndefined()
+  })
+
   it('recalculates its inferred axis when the data range changes', async () => {
     const wrapper = mount(LineChart, { props: { data, width: 720 } })
 

@@ -31,3 +31,7 @@ Pass `format-value="%"` to append a suffix, `format-value="{value}%"` for a temp
 ```
 
 The y-axis range and ticks are inferred from the supplied values. Use `yDomain` or `yTicks` only when an exact scale is required.
+
+## Tooltip
+
+Hover or focus a point to see an HTML tooltip containing the category and all available series values. Set `showTooltip` to `false` to disable it.
