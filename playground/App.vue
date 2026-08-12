@@ -1,15 +1,37 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue'
 
-import { SankeyChart } from '../src/index.js'
-import { DEFAULT_DATA } from './sample-data.js'
+import { LineChart, SankeyChart } from '../src/index.js'
+import { DEFAULT_LINE_DATA, DEFAULT_SANKEY_DATA } from './sample-data.js'
 
-const STORAGE_KEY = 'chatwoot-viz:sankey-data'
 const SHIKI_CDN_URL = 'https://esm.sh/shiki@4.4.3'
 const DEFAULT_CANVAS_HEIGHT = 380
 const MIN_CANVAS_HEIGHT = 260
+const charts = [
+  { id: 'sankey', label: 'Sankey', path: '/sankey' },
+  { id: 'line', label: 'Line', path: '/line' },
+]
+const defaultData = {
+  line: DEFAULT_LINE_DATA,
+  sankey: DEFAULT_SANKEY_DATA,
+}
 
-const source = ref(localStorage.getItem(STORAGE_KEY) ?? DEFAULT_DATA)
+function dataStorageKey(chart) {
+  return `chatwoot-viz:${chart}-data`
+}
+
+function chartFromPath(pathname) {
+  return charts.find((chart) => chart.path === pathname)?.id ?? 'line'
+}
+
+function pathForChart(chartId) {
+  return charts.find((chart) => chart.id === chartId)?.path ?? '/line'
+}
+
+const activeChart = ref(chartFromPath(window.location.pathname))
+const source = ref(
+  localStorage.getItem(dataStorageKey(activeChart.value)) ?? defaultData[activeChart.value],
+)
 const canvasHeight = ref(DEFAULT_CANVAS_HEIGHT)
 const highlightedCode = ref('')
 const hasHighlighting = ref(false)
@@ -32,10 +54,18 @@ const result = computed(() => {
 watch(
   source,
   (value) => {
-    localStorage.setItem(STORAGE_KEY, value)
+    localStorage.setItem(dataStorageKey(activeChart.value), value)
   },
   { immediate: true },
 )
+
+watch(activeChart, (chart, previousChart) => {
+  localStorage.setItem(dataStorageKey(previousChart), source.value)
+  source.value = localStorage.getItem(dataStorageKey(chart)) ?? defaultData[chart]
+
+  const path = pathForChart(chart)
+  if (window.location.pathname !== path) window.history.pushState({}, '', path)
+})
 
 async function updateHighlight() {
   if (!codeToHtml) return
@@ -64,7 +94,7 @@ function formatData() {
 }
 
 function resetData() {
-  source.value = DEFAULT_DATA
+  source.value = defaultData[activeChart.value]
 }
 
 function fitCanvas() {
@@ -80,7 +110,15 @@ function updateCanvasHeight(height) {
   canvasHeight.value = Math.max(Math.round(height), MIN_CANVAS_HEIGHT)
 }
 
+function syncChartFromPath() {
+  activeChart.value = chartFromPath(window.location.pathname)
+}
+
 onMounted(() => {
+  const activePath = pathForChart(activeChart.value)
+  if (window.location.pathname !== activePath) window.history.replaceState({}, '', activePath)
+  window.addEventListener('popstate', syncChartFromPath)
+
   import(/* @vite-ignore */ SHIKI_CDN_URL)
     .then((shiki) => {
       codeToHtml = shiki.codeToHtml
@@ -112,6 +150,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('popstate', syncChartFromPath)
   highlightRequest += 1
   clearTimeout(highlightTimer)
   canvasObserver?.disconnect()
@@ -127,7 +166,11 @@ watch(source, scheduleHighlight)
       <div class="brand">
         <strong>@chatwoot/viz</strong>
         <span aria-hidden="true">/</span>
-        <span class="brand__story">Sankey</span>
+        <select v-model="activeChart" class="story-select" aria-label="Chart story">
+          <option v-for="chart in charts" :key="chart.id" :value="chart.id">
+            {{ chart.label }}
+          </option>
+        </select>
       </div>
     </header>
 
@@ -146,7 +189,7 @@ watch(source, scheduleHighlight)
         </header>
 
         <div class="editor-body" :class="{ 'editor-body--highlighted': hasHighlighting }">
-          <label class="sr-only" for="sankey-data">Chart data</label>
+          <label class="sr-only" for="chart-data">Chart data</label>
           <div
             v-if="hasHighlighting"
             ref="highlighted-editor"
@@ -155,7 +198,7 @@ watch(source, scheduleHighlight)
             v-html="highlightedCode"
           />
           <textarea
-            id="sankey-data"
+            id="chart-data"
             v-model="source"
             spellcheck="false"
             wrap="off"
@@ -189,13 +232,21 @@ watch(source, scheduleHighlight)
 
         <div class="canvas-stage">
           <div ref="canvas-frame" class="canvas-frame">
+            <LineChart
+              v-if="result.data && activeChart === 'line'"
+              :data="result.data"
+              :height="canvasHeight"
+              aria-label="Conversation trends by week"
+            />
             <SankeyChart
-              v-if="result.data"
+              v-else-if="result.data"
               :data="result.data"
               :height="canvasHeight"
               aria-label="Conversation resolution flow"
             />
-            <div v-else class="empty-state">Fix the JSON to render the Sankey chart.</div>
+            <div v-else class="empty-state">
+              Fix the JSON to render the {{ activeChart }} chart.
+            </div>
           </div>
         </div>
       </section>

@@ -1,4 +1,41 @@
-const sampleData = {
+const lineData = {
+  categories: [
+    {
+      id: 'jun-01-07',
+      label: 'Jun 01 - 07',
+    },
+    {
+      id: 'jun-08-14',
+      label: 'Jun 08 - 14',
+    },
+    {
+      id: 'jun-15-21',
+      label: 'Jun 15 - 21',
+    },
+    {
+      id: 'jun-22-30',
+      label: 'Jun 22 - 30',
+    },
+  ],
+  series: [
+    {
+      id: 'handled',
+      label: 'Handled',
+      color: '#d9d9e0',
+      pointColor: '#b9bbc6',
+      valueColor: '#60646c',
+      data: [30, 40, 35, 51],
+    },
+    {
+      id: 'resolved',
+      label: 'Resolved',
+      color: '#009688',
+      data: [12, 29, 23, 39],
+    },
+  ],
+}
+
+const sankeyData = {
   nodes: [
     {
       id: 'conversations_handled',
@@ -67,4 +104,5 @@ const sampleData = {
   ],
 }
 
-export const DEFAULT_DATA = JSON.stringify(sampleData, null, 2)
+export const DEFAULT_LINE_DATA = JSON.stringify(lineData, null, 2)
+export const DEFAULT_SANKEY_DATA = JSON.stringify(sankeyData, null, 2)

@@ -2,11 +2,9 @@
 
 Tiny, responsive SVG chart components for Vue 3.5 and newer, built for Chatwoot.
 
-The first component is a dependency-free Sankey chart for directed acyclic
-flows. Its data shape follows the familiar
-[Unovis Sankey format](https://unovis.dev/docs/networks-and-flows/Sankey/): an
-array of node data and an array of links whose `source` and `target` refer to
-those nodes.
+The library currently includes a multi-series line chart and a dependency-free
+Sankey chart. Shared Cartesian scale helpers back the line chart and are ready
+to be reused by bar charts.
 
 ## Requirements
 
@@ -21,12 +19,12 @@ pnpm install
 pnpm dev
 ```
 
-The Vite playground opens from the repository root. Its JSON editor validates
-input as you type and stores the raw text under
-`chatwoot-viz:sankey-data` in localStorage. The editor loads JSON syntax
-highlighting from Shiki's browser CDN, with plain text as its offline fallback.
-Drag the canvas's lower-right corner to test the chart at different container
-widths and heights.
+The Vite playground exposes the line and Sankey stories at `/line` and
+`/sankey`. Its JSON editor validates input as you type and stores a separate
+draft for each chart in localStorage. The editor loads JSON syntax highlighting
+from Shiki's browser CDN, with plain text as its offline fallback. Drag the
+canvas's lower-right corner to test a chart at different container widths and
+heights.
 
 Useful commands:
 
@@ -43,10 +41,98 @@ pnpm check         # Run all checks and the production build
 
 The package is not published yet. Once installed or linked locally:
 
+Import the stylesheet once in the consuming application:
+
+```js
+import '@chatwoot/viz/style.css'
+```
+
+## Line chart
+
+The line chart accepts categories and any number of series. A point can be a
+number or an object with a `value` or `y` field.
+
+```vue
+<script setup>
+import { LineChart } from '@chatwoot/viz'
+
+const data = {
+  categories: ['Jun 01 - 07', 'Jun 08 - 14', 'Jun 15 - 21', 'Jun 22 - 30'],
+  series: [
+    {
+      id: 'handled',
+      label: 'Handled',
+      color: '#d9d9e0',
+      pointColor: '#b9bbc6',
+      valueColor: '#60646c',
+      data: [30, 40, 35, 51],
+    },
+    {
+      id: 'resolved',
+      label: 'Resolved',
+      color: '#009688',
+      data: [12, 29, 23, 39],
+    },
+  ],
+}
+</script>
+
+<template>
+  <LineChart :data="data" aria-label="Conversation trends by week" />
+</template>
+```
+
+### Line chart props
+
+| Prop               | Default                                  | Purpose                                                 |
+| ------------------ | ---------------------------------------- | ------------------------------------------------------- |
+| `data`             | required                                 | `{ categories, series }` line data                      |
+| `height`           | `360`                                    | SVG layout height                                       |
+| `width`            | `960`                                    | Initial/SSR width before the container is measured      |
+| `pointRadius`      | `5`                                      | Marker radius                                           |
+| `showValues`       | `true`                                   | Show a formatted value next to each marker              |
+| `yDomain`          | inferred                                 | Optional `[minimum, maximum]` numeric domain            |
+| `yTicks`           | inferred                                 | Optional array of exact y-axis tick values              |
+| `yTickCount`       | `5`                                      | Target tick count when ticks are inferred               |
+| `xInset`           | responsive                               | Horizontal inset for the first and last points          |
+| `categoryLabel`    | `category => category.label ?? category` | Category label accessor                                 |
+| `seriesId`         | `series => series.id`                    | Series id accessor                                      |
+| `seriesLabel`      | label, id, then generated label          | Accessible series label accessor                        |
+| `seriesValues`     | `series => series.data ?? series.values` | Series point-array accessor                             |
+| `pointValue`       | number, `value`, then `y`                | Numeric point accessor                                  |
+| `seriesColor`      | `series => series.color`                 | Line color or accessor                                  |
+| `seriesPointColor` | `series => series.pointColor`            | Marker color or accessor; falls back to the line color  |
+| `seriesValueColor` | value or label color                     | Point-label color or accessor; falls back to line color |
+| `formatValue`      | locale number formatting                 | Tick and point-value formatter                          |
+| `ariaLabel`        | `Line chart`                             | Accessible chart name                                   |
+
+### Line chart CSS variables
+
+```css
+.cw-viz-line {
+  --cw-viz-line-axis-color: #d9d9e0;
+  --cw-viz-line-label-color: #60646c;
+  --cw-viz-line-width: 2px;
+  --cw-viz-line-point-border-color: #ffffff;
+  --cw-viz-line-point-border-width: 3px;
+  --cw-viz-line-axis-font-size: 12px;
+  --cw-viz-line-value-font-size: 12px;
+}
+```
+
+Series-specific fallback colors can be set by index or id, for example
+`--cw-viz-line-series-0-color` or `--cw-viz-line-series-resolved-color`.
+
+## Sankey chart
+
+The Sankey data shape follows the familiar
+[Unovis Sankey format](https://unovis.dev/docs/networks-and-flows/Sankey/): an
+array of node data and an array of links whose `source` and `target` refer to
+those nodes.
+
 ```vue
 <script setup>
 import { SankeyChart } from '@chatwoot/viz'
-import '@chatwoot/viz/style.css'
 
 const data = {
   nodes: [
@@ -68,7 +154,7 @@ const data = {
 </style>
 ```
 
-### Data
+### Sankey data
 
 `data.nodes` accepts arbitrary objects. By default, the component reads `id`,
 `label`, `count`, and `color`. `data.links` reads `source`, `target`, `value`,
@@ -95,7 +181,7 @@ The accessors can be replaced when an application uses different field names:
 />
 ```
 
-### Props
+### Sankey props
 
 | Prop                  | Default                                 | Purpose                                                     |
 | --------------------- | --------------------------------------- | ----------------------------------------------------------- |
@@ -117,7 +203,7 @@ The accessors can be replaced when an application uses different field names:
 The chart observes its own container and recalculates horizontal positions as
 the available width changes. No sizing utility is required.
 
-### CSS variables
+### Sankey CSS variables
 
 ```css
 .cw-viz-sankey {

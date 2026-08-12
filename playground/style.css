@@ -26,6 +26,7 @@ body,
 }
 
 button,
+select,
 textarea {
   font: inherit;
 }
@@ -46,6 +47,7 @@ button:hover {
 }
 
 button:focus-visible,
+select:focus-visible,
 textarea:focus-visible {
   outline: 2px solid #3e63dd;
   outline-offset: -2px;
@@ -91,8 +93,14 @@ textarea:focus-visible {
   color: #1c2024;
 }
 
-.brand__story {
-  color: #60646c;
+.story-select {
+  min-height: 28px;
+  padding: 0.2rem 1.6rem 0.2rem 0.45rem;
+  border: 1px solid #d9d9e0;
+  border-radius: 4px;
+  color: #1c2024;
+  background: #ffffff;
+  font-size: 0.75rem;
 }
 
 .workspace {
@@ -251,8 +259,6 @@ textarea:focus-visible {
 }
 
 .chart-panel {
-  --sankey-captain-color: #038574;
-  --sankey-handled-color: #4747c2;
   background: #f8f8fa;
 }
 
@@ -283,13 +289,24 @@ textarea:focus-visible {
   background: #ffffff;
 }
 
+.canvas-frame .cw-viz-line,
 .canvas-frame .cw-viz-sankey {
   width: 100%;
   height: 100%;
+}
+
+.canvas-frame .cw-viz-line {
+  --cw-viz-line-label-color: #60646c;
+}
+
+.canvas-frame .cw-viz-sankey {
+  --sankey-captain-color: #038574;
+  --sankey-handled-color: #4747c2;
   --cw-viz-sankey-label-color: #60646c;
   --cw-viz-sankey-label-value-color: #1c2024;
 }
 
+.canvas-frame .cw-viz-line__svg,
 .canvas-frame .cw-viz-sankey__svg {
   height: 100%;
 }
@@ -313,8 +330,7 @@ textarea:focus-visible {
 }
 
 @media (max-width: 800px) {
-  .panel-hint,
-  .brand__story {
+  .panel-hint {
     display: none;
   }
 
