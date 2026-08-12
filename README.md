@@ -23,7 +23,10 @@ pnpm dev
 
 The Vite playground opens from the repository root. Its JSON editor validates
 input as you type and stores the raw text under
-`chatwoot-viz:sankey-data` in localStorage.
+`chatwoot-viz:sankey-data` in localStorage. The editor loads JSON syntax
+highlighting from Shiki's browser CDN, with plain text as its offline fallback.
+Drag the canvas's lower-right corner to test the chart at different container
+widths and heights.
 
 Useful commands:
 
