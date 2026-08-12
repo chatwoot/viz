@@ -2,7 +2,7 @@ import { mount } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import App from './App.vue'
-import { DEFAULT_BAR_DATA, DEFAULT_SANKEY_DATA } from './sample-data.js'
+import { DEFAULT_BAR_DATA, DEFAULT_HEATMAP_DATA, DEFAULT_SANKEY_DATA } from './sample-data.js'
 
 describe('playground', () => {
   beforeEach(() => {
@@ -56,6 +56,18 @@ describe('playground', () => {
     expect(wrapper.findComponent({ name: 'SankeyChart' }).exists()).toBe(true)
     expect(wrapper.get('a[href="/sankey"]').attributes('aria-current')).toBe('page')
     expect(wrapper.get('textarea').element.value).toBe(DEFAULT_SANKEY_DATA)
+  })
+
+  it('loads client-provided heatmap labels directly from its path', () => {
+    window.history.replaceState({}, '', '/heatmap')
+
+    const wrapper = mount(App)
+
+    expect(wrapper.findComponent({ name: 'HeatmapChart' }).exists()).toBe(true)
+    expect(wrapper.get('a[href="/heatmap"]').attributes('aria-current')).toBe('page')
+    expect(wrapper.get('textarea').element.value).toBe(DEFAULT_HEATMAP_DATA)
+    expect(wrapper.get('.cw-viz-heatmap__row-label').text()).toContain('Thursday')
+    expect(wrapper.get('.cw-viz-heatmap__row-label').text()).toContain('Aug 6, 2026')
   })
 
   it('controls stacked and time-series bar options from the preview toolbar', async () => {
@@ -209,7 +221,12 @@ describe('playground', () => {
     const savedBar = { categories: ['Saved'], series: [{ id: 'saved', data: [18] }] }
     const savedLine = { categories: ['Saved'], series: [{ id: 'saved', data: [42] }] }
     const savedSankey = { nodes: [{ id: 'saved', count: 1 }], links: [] }
+    const savedHeatmap = {
+      columns: ['Saved hour'],
+      rows: [{ id: 'saved', label: 'Saved day', data: [7] }],
+    }
     localStorage.setItem('chatwoot-viz:bar-data', JSON.stringify(savedBar))
+    localStorage.setItem('chatwoot-viz:heatmap-data', JSON.stringify(savedHeatmap))
     localStorage.setItem('chatwoot-viz:line-data', JSON.stringify(savedLine))
     localStorage.setItem('chatwoot-viz:sankey-data', JSON.stringify(savedSankey))
     window.history.replaceState({}, '', '/')
@@ -220,10 +237,12 @@ describe('playground', () => {
       'Sankey',
       'Line',
       'Bar',
+      'Heatmap',
     ])
     expect(wrapper.findComponent({ name: 'SankeyChart' }).props('data')).toEqual(savedSankey)
     expect(wrapper.findComponent({ name: 'LineChart' }).props('data')).toEqual(savedLine)
     expect(wrapper.findComponent({ name: 'BarChart' }).props('data')).toEqual(savedBar)
+    expect(wrapper.findComponent({ name: 'HeatmapChart' }).props('data')).toEqual(savedHeatmap)
     expect(wrapper.find('.editor-panel').exists()).toBe(false)
     expect(wrapper.get('a[href="/"]').attributes('aria-current')).toBe('page')
   })

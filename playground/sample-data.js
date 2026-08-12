@@ -74,6 +74,57 @@ const barData = {
   ],
 }
 
+const heatmapData = {
+  columns: Array.from({ length: 24 }, (_, hour) => ({
+    id: `hour-${hour}`,
+    label: `${String(hour).padStart(2, '0')}:00`,
+  })),
+  rows: [
+    {
+      id: '2026-08-06',
+      label: 'Thursday',
+      description: 'Aug 6, 2026',
+      data: [3, 2, 1, 2, 2, 1, 0, 1, 0, 0, 3, 0, 2, 1, 3, 1, 4, 1, 3, 4, 5, 4, 4, 3],
+    },
+    {
+      id: '2026-08-07',
+      label: 'Friday',
+      description: 'Aug 7, 2026',
+      data: [3, 1, 2, 1, 1, 0, 1, 2, 0, 1, 0, 0, 0, 5, 1, 4, 3, 2, 5, 3, 2, 5, 2, 4],
+    },
+    {
+      id: '2026-08-08',
+      label: 'Saturday',
+      description: 'Aug 8, 2026',
+      data: [1, 3, 3, 2, 0, 2, 0, 0, 2, 0, 0, 0, 0, 1, 0, 0, 0, 3, 2, 0, 1, 1, 1, 2],
+    },
+    {
+      id: '2026-08-09',
+      label: 'Sunday',
+      description: 'Aug 9, 2026',
+      data: [0, 1, 1, 1, 1, 2, 0, 1, 0, 0, 0, 3, 3, 0, 1, 3, 2, 3, 0, 0, 2, 1, 0, 1],
+    },
+    {
+      id: '2026-08-10',
+      label: 'Monday',
+      description: 'Aug 10, 2026',
+      data: [1, 3, 1, 1, 1, 0, 0, 0, 0, 2, 1, 4, 3, 2, 5, 5, 3, 4, 4, 5, 1, 3, 5, 4],
+    },
+    {
+      id: '2026-08-11',
+      label: 'Tuesday',
+      description: 'Aug 11, 2026',
+      data: [3, 2, 3, 1, 2, 0, 0, 1, 0, 0, 1, 1, 5, 5, 4, 5, 3, 4, 5, 3, 3, 5, 3, 0],
+    },
+    {
+      id: '2026-08-12',
+      label: 'Wednesday',
+      description: 'Aug 12, 2026',
+      data: [5, 2, 2, 2, 1, 0, 0, 0, 1, 0, 2, 2, 5, 4, 2, 1, 4, 4, 3, 2, 4, 0, 0, 0],
+    },
+  ],
+}
+
 const sankeyData = {
   nodes: [
     {
@@ -144,5 +195,6 @@ const sankeyData = {
 }
 
 export const DEFAULT_BAR_DATA = JSON.stringify(barData, null, 2)
+export const DEFAULT_HEATMAP_DATA = JSON.stringify(heatmapData, null, 2)
 export const DEFAULT_LINE_DATA = JSON.stringify(lineData, null, 2)
 export const DEFAULT_SANKEY_DATA = JSON.stringify(sankeyData, null, 2)

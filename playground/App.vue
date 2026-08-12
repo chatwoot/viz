@@ -1,14 +1,21 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue'
 
-import { BarChart, LineChart, SankeyChart } from '../src/index.js'
+import { BarChart, HeatmapChart, LineChart, SankeyChart } from '../src/index.js'
 import BarDocs from './docs/bar.md'
 import barDocsSource from './docs/bar.md?raw'
+import HeatmapDocs from './docs/heatmap.md'
+import heatmapDocsSource from './docs/heatmap.md?raw'
 import LineDocs from './docs/line.md'
 import lineDocsSource from './docs/line.md?raw'
 import SankeyDocs from './docs/sankey.md'
 import sankeyDocsSource from './docs/sankey.md?raw'
-import { DEFAULT_BAR_DATA, DEFAULT_LINE_DATA, DEFAULT_SANKEY_DATA } from './sample-data.js'
+import {
+  DEFAULT_BAR_DATA,
+  DEFAULT_HEATMAP_DATA,
+  DEFAULT_LINE_DATA,
+  DEFAULT_SANKEY_DATA,
+} from './sample-data.js'
 
 const SHIKI_CDN_URL = 'https://esm.sh/shiki@4.4.3'
 const DEFAULT_CANVAS_HEIGHT = 380
@@ -21,14 +28,17 @@ const pages = [
   { id: 'sankey', label: 'Sankey', path: '/sankey' },
   { id: 'line', label: 'Line', path: '/line' },
   { id: 'bar', label: 'Bar', path: '/bar' },
+  { id: 'heatmap', label: 'Heatmap', path: '/heatmap' },
 ]
 const defaultData = {
   bar: DEFAULT_BAR_DATA,
+  heatmap: DEFAULT_HEATMAP_DATA,
   line: DEFAULT_LINE_DATA,
   sankey: DEFAULT_SANKEY_DATA,
 }
 const docs = {
   bar: { component: BarDocs, source: barDocsSource, title: 'Bar Chart' },
+  heatmap: { component: HeatmapDocs, source: heatmapDocsSource, title: 'Heatmap Chart' },
   line: { component: LineDocs, source: lineDocsSource, title: 'Line Chart' },
   sankey: { component: SankeyDocs, source: sankeyDocsSource, title: 'Sankey Chart' },
 }
@@ -60,6 +70,7 @@ function parseSource(source, fallback) {
 const activePage = ref(pageFromPath(window.location.pathname))
 const drafts = ref({
   bar: savedSource('bar'),
+  heatmap: savedSource('heatmap'),
   line: savedSource('line'),
   sankey: savedSource('sankey'),
 })
@@ -89,6 +100,7 @@ const result = computed(() => {
 })
 const homeData = computed(() => ({
   bar: parseSource(drafts.value.bar, DEFAULT_BAR_DATA),
+  heatmap: parseSource(drafts.value.heatmap, DEFAULT_HEATMAP_DATA),
   line: parseSource(drafts.value.line, DEFAULT_LINE_DATA),
   sankey: parseSource(drafts.value.sankey, DEFAULT_SANKEY_DATA),
 }))
@@ -327,6 +339,11 @@ watch(source, scheduleHighlight)
           aria-label="Conversation volume by week"
         />
       </section>
+
+      <section class="home-chart" aria-labelledby="home-heatmap-title">
+        <h2 id="home-heatmap-title">Heatmap</h2>
+        <HeatmapChart :data="homeData.heatmap" aria-label="Hourly activity by day" />
+      </section>
     </section>
 
     <section
@@ -431,6 +448,11 @@ watch(source, scheduleHighlight)
               :data="result.data"
               :height="canvasHeight"
               aria-label="Conversation resolution flow"
+            />
+            <HeatmapChart
+              v-else-if="result.data && activePage === 'heatmap'"
+              :data="result.data"
+              aria-label="Hourly activity by day"
             />
             <div v-else class="empty-state">Fix the JSON to render the {{ activePage }} chart.</div>
           </div>

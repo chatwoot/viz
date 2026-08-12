@@ -3,8 +3,8 @@
 Tiny, responsive SVG chart components for Vue 3.5 and newer, built for Chatwoot.
 
 The library currently includes grouped and stacked bar charts, a multi-series
-line chart, and a dependency-free Sankey chart. The Cartesian charts share the
-same responsive scale, axis, accessor, and formatting helpers.
+line chart, a matrix heatmap, and a dependency-free Sankey chart. The Cartesian
+charts share the same responsive scale, axis, accessor, and formatting helpers.
 
 ## Requirements
 
@@ -19,8 +19,19 @@ pnpm install
 pnpm dev
 ```
 
+### Bundle analysis
+
+Generate an interactive treemap with raw, gzip, and Brotli size estimates:
+
+```bash
+pnpm analyze
+```
+
+Open `bundle-report.html` in a browser. The report is generated only for the
+analysis build and is ignored by Git.
+
 The Vite playground exposes an overview at `/` and editable chart stories at
-`/bar`, `/line`, and `/sankey`. The overview renders every chart from its saved data,
+`/bar`, `/heatmap`, `/line`, and `/sankey`. The overview renders every chart from its saved data,
 falling back to the defaults when needed. The JSON editor validates input as
 you type and stores a separate draft for each chart in localStorage. It loads
 JSON syntax highlighting from Shiki's browser CDN, with plain text as its
@@ -126,6 +137,82 @@ labels, and the rich HTML tooltip.
 
 Series fallback colors can be set by index or id, for example
 `--cw-viz-bar-series-0-color` or `--cw-viz-bar-series-automated-color`.
+
+## Heatmap chart
+
+The heatmap accepts any number of rows and columns. This 24-column example uses
+client-provided labels for hours, days, and dates; the component does not parse,
+localize, or derive any of them.
+
+```vue
+<script setup>
+import { HeatmapChart } from '@chatwoot/viz'
+
+const data = {
+  columns: Array.from({ length: 24 }, (_, hour) => ({
+    id: `hour-${hour}`,
+    label: `${String(hour).padStart(2, '0')}:00`,
+  })),
+  rows: [
+    {
+      id: '2026-08-10',
+      label: 'Monday',
+      description: 'Aug 10, 2026',
+      data: [1, 3, 1, 1, 1, 0, 0, 0, 0, 2, 1, 4, 3, 2, 5, 5, 3, 4, 4, 5, 1, 3, 5, 4],
+    },
+  ],
+}
+</script>
+
+<template>
+  <HeatmapChart :data="data" aria-label="Hourly activity by day" />
+</template>
+```
+
+Numeric cells are assigned to five color buckets across an inferred domain.
+Pass `domain` to share an exact scale between heatmaps. Cell objects may use
+`value` or `count` and can provide a `color` override as a hex value or CSS
+variable. Hovering or focusing a cell opens a rich HTML tooltip.
+
+### Heatmap props
+
+| Prop             | Default                                  | Purpose                                              |
+| ---------------- | ---------------------------------------- | ---------------------------------------------------- |
+| `data`           | required                                 | `{ columns, rows }` matrix data                      |
+| `domain`         | inferred                                 | Optional `[minimum, maximum]` shared color domain    |
+| `cellHeight`     | `32`                                     | Cell height in pixels                                |
+| `cellMinWidth`   | `28`                                     | Minimum cell width before horizontal scrolling       |
+| `gap`            | `4`                                      | Gap between cells                                    |
+| `rowLabelWidth`  | `120`                                    | Width reserved for row labels                        |
+| `showTooltip`    | `true`                                   | Enable focusable cells and the rich HTML tooltip     |
+| `columnId`       | id, then index                           | Column id accessor                                   |
+| `columnLabel`    | `column => column.label ?? column`       | Client-provided column label accessor                |
+| `rowId`          | id, then index                           | Row id accessor                                      |
+| `rowLabel`       | label, id, then index                    | Client-provided primary row label accessor           |
+| `rowDescription` | description, sublabel, then empty string | Client-provided secondary row label accessor         |
+| `rowValues`      | `row => row.data ?? row.values`          | Row cell-array accessor                              |
+| `cellValue`      | number, `value`, then `count`            | Numeric cell accessor                                |
+| `cellColor`      | `cell => cell.color`                     | Optional per-cell color accessor                     |
+| `formatValue`    | locale number formatting                 | String template/suffix or tooltip formatter function |
+| `ariaLabel`      | `Heatmap chart`                          | Accessible chart name                                |
+
+### Heatmap CSS variables
+
+```css
+.cw-viz-heatmap {
+  --cw-viz-heatmap-level-0-color: #f8f8fa;
+  --cw-viz-heatmap-level-1-color: #e2efff;
+  --cw-viz-heatmap-level-2-color: #bdd9fb;
+  --cw-viz-heatmap-level-3-color: #8ab6f0;
+  --cw-viz-heatmap-level-4-color: #1c73dc;
+  --cw-viz-heatmap-cell-border-color: rgb(62 99 221 / 8%);
+  --cw-viz-heatmap-cell-radius: 3px;
+  --cw-viz-heatmap-label-color: #60646c;
+  --cw-viz-heatmap-row-title-color: #1c2024;
+  --cw-viz-heatmap-tooltip-background: #ffffff;
+  --cw-viz-heatmap-tooltip-border-color: #e0e1e6;
+}
+```
 
 ## Line chart
 

@@ -1,6 +1,6 @@
 node_modules
 dist
 coverage
+bundle-report.html
 .DS_Store
 *.local
-

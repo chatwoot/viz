@@ -126,7 +126,7 @@ textarea:focus-visible {
   margin: 0 auto;
   padding: 2rem;
   gap: 1.5rem;
-  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   overflow: auto;
 }
 
@@ -547,6 +547,10 @@ textarea:focus-visible {
 .canvas-frame .cw-viz-line__svg,
 .canvas-frame .cw-viz-sankey__svg {
   height: 100%;
+}
+
+.canvas-frame .cw-viz-heatmap {
+  --cw-viz-heatmap-label-background: #ffffff;
 }
 
 .empty-state {
