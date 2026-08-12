@@ -267,7 +267,7 @@ onBeforeUnmount(() => {
                 class="cw-viz-line__point"
                 cx="0"
                 cy="0"
-                :r="pointRadius"
+                :r="pointRadius * 0.8"
                 :fill="series.pointColor"
               >
                 <title>

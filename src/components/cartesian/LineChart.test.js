@@ -53,6 +53,8 @@ describe('LineChart', () => {
     expect(handled.get('.cw-viz-line__point').attributes('fill')).toBe('#b9bbc6')
     expect(handled.get('.cw-viz-line__point-background').attributes('fill')).toBe('#ebebef')
     expect(handled.get('.cw-viz-line__point-background').attributes('stroke')).toBe('#ebebef')
+    expect(handled.get('.cw-viz-line__point-background').attributes('r')).toBe('5')
+    expect(handled.get('.cw-viz-line__point').attributes('r')).toBe('4')
     expect(handled.get('.cw-viz-line__point').attributes('stroke')).toBeUndefined()
     expect(resolved.get('.cw-viz-line__path').attributes('stroke')).toBe('var(--resolved-color)')
     expect(
