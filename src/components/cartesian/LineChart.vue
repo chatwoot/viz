@@ -255,12 +255,20 @@ onBeforeUnmount(() => {
               :data-point-index="point.index"
             >
               <circle
+                class="cw-viz-line__point-background"
+                cx="0"
+                cy="0"
+                :r="pointRadius"
+                :fill="series.pointBorderColor"
+                :stroke="series.pointBorderColor"
+                aria-hidden="true"
+              />
+              <circle
                 class="cw-viz-line__point"
                 cx="0"
                 cy="0"
                 :r="pointRadius"
                 :fill="series.pointColor"
-                :stroke="series.pointBorderColor"
               >
                 <title>
                   {{ series.label }}, {{ point.category.label }}: {{ point.formattedValue }}
@@ -325,15 +333,20 @@ onBeforeUnmount(() => {
   vector-effect: non-scaling-stroke;
 }
 
-.cw-viz-line__point {
-  stroke-width: var(--cw-viz-line-point-border-width, 3px);
+.cw-viz-line__point-background {
+  stroke-width: var(--cw-viz-line-point-border-width, 6px);
+}
+
+.cw-viz-line__point,
+.cw-viz-line__point-background {
   transform-box: fill-box;
   transform-origin: center;
   vector-effect: non-scaling-stroke;
   transition: transform 120ms ease;
 }
 
-.cw-viz-line__point-group:hover .cw-viz-line__point {
+.cw-viz-line__point-group:hover .cw-viz-line__point,
+.cw-viz-line__point-group:hover .cw-viz-line__point-background {
   transform: scale(1.2);
 }
 
@@ -345,6 +358,10 @@ onBeforeUnmount(() => {
 
 @media (prefers-reduced-motion: reduce) {
   .cw-viz-line__point {
+    transition: none;
+  }
+
+  .cw-viz-line__point-background {
     transition: none;
   }
 }

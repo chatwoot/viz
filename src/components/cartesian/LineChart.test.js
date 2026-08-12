@@ -51,7 +51,9 @@ describe('LineChart', () => {
     const resolved = wrapper.get('[data-series-id="resolved"]')
     expect(handled.get('.cw-viz-line__path').attributes('stroke')).toBe('#d9d9e0')
     expect(handled.get('.cw-viz-line__point').attributes('fill')).toBe('#b9bbc6')
-    expect(handled.get('.cw-viz-line__point').attributes('stroke')).toBe('#ebebef')
+    expect(handled.get('.cw-viz-line__point-background').attributes('fill')).toBe('#ebebef')
+    expect(handled.get('.cw-viz-line__point-background').attributes('stroke')).toBe('#ebebef')
+    expect(handled.get('.cw-viz-line__point').attributes('stroke')).toBeUndefined()
     expect(resolved.get('.cw-viz-line__path').attributes('stroke')).toBe('var(--resolved-color)')
     expect(
       wrapper.findAll('.cw-viz-line__path').every((line) => !line.attributes('d').includes('NaN')),

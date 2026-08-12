@@ -58,6 +58,65 @@ describe('playground', () => {
     expect(wrapper.get('textarea').element.value).toBe(DEFAULT_SANKEY_DATA)
   })
 
+  it('toggles rendered documentation for the active chart', async () => {
+    const wrapper = mount(App)
+    const toggle = wrapper.get('.docs-toggle')
+
+    expect(wrapper.find('.docs-panel').exists()).toBe(false)
+    expect(toggle.attributes('aria-expanded')).toBe('false')
+
+    await toggle.trigger('click')
+
+    expect(toggle.attributes('aria-expanded')).toBe('true')
+    expect(wrapper.get('.docs-toolbar .panel-title').text()).toBe('Line Chart')
+    expect(wrapper.get('.docs-panel pre code').classes()).toContain('language-json')
+
+    await wrapper.get('a[href="/sankey"]').trigger('click')
+
+    expect(wrapper.get('.docs-toolbar .panel-title').text()).toBe('Sankey Chart')
+  })
+
+  it('copies the active chart Markdown source', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    vi.stubGlobal('navigator', { clipboard: { writeText } })
+    const wrapper = mount(App)
+    await wrapper.get('.docs-toggle').trigger('click')
+
+    await wrapper.get('.docs-toolbar button').trigger('click')
+
+    expect(writeText).toHaveBeenCalledWith(expect.stringContaining('Use `LineChart`'))
+    expect(wrapper.get('.docs-toolbar button').text()).toBe('Copied')
+  })
+
+  it('resizes the documentation sidebar by pointer and keyboard', async () => {
+    const wrapper = mount(App)
+    await wrapper.get('.docs-toggle').trigger('click')
+    const handle = wrapper.get('.docs-resize-handle')
+
+    handle.element.dispatchEvent(
+      new MouseEvent('pointerdown', { bubbles: true, button: 0, clientX: 900 }),
+    )
+    window.dispatchEvent(new MouseEvent('pointermove', { clientX: 850 }))
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.get('.workspace').attributes('style')).toContain('--docs-panel-width: 410px')
+    expect(handle.attributes('aria-valuenow')).toBe('410')
+
+    await handle.trigger('keydown', { key: 'ArrowRight' })
+
+    expect(wrapper.get('.workspace').attributes('style')).toContain('--docs-panel-width: 390px')
+    window.dispatchEvent(new MouseEvent('pointerup'))
+  })
+
+  it('hides chart documentation controls on the home page', () => {
+    window.history.replaceState({}, '', '/')
+
+    const wrapper = mount(App)
+
+    expect(wrapper.find('.docs-toggle').exists()).toBe(false)
+    expect(wrapper.find('.docs-panel').exists()).toBe(false)
+  })
+
   it('resets the Sankey story to its reference data', async () => {
     window.history.replaceState({}, '', '/sankey')
     const wrapper = mount(App)

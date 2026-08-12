@@ -126,7 +126,7 @@ locale-formatted number within a template. For custom logic, pass a function:
   --cw-viz-line-label-color: #60646c;
   --cw-viz-line-width: 2px;
   --cw-viz-line-point-border-color: #ffffff;
-  --cw-viz-line-point-border-width: 3px;
+  --cw-viz-line-point-border-width: 6px;
   --cw-viz-line-axis-font-size: 12px;
   --cw-viz-line-value-font-size: 12px;
 }

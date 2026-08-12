@@ -2,11 +2,18 @@
 import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue'
 
 import { LineChart, SankeyChart } from '../src/index.js'
+import LineDocs from './docs/line.md'
+import lineDocsSource from './docs/line.md?raw'
+import SankeyDocs from './docs/sankey.md'
+import sankeyDocsSource from './docs/sankey.md?raw'
 import { DEFAULT_LINE_DATA, DEFAULT_SANKEY_DATA } from './sample-data.js'
 
 const SHIKI_CDN_URL = 'https://esm.sh/shiki@4.4.3'
 const DEFAULT_CANVAS_HEIGHT = 380
 const MIN_CANVAS_HEIGHT = 260
+const DEFAULT_DOCS_WIDTH = 360
+const MIN_DOCS_WIDTH = 260
+const MAX_DOCS_WIDTH = 560
 const pages = [
   { id: 'home', label: 'Home', path: '/' },
   { id: 'sankey', label: 'Sankey', path: '/sankey' },
@@ -15,6 +22,10 @@ const pages = [
 const defaultData = {
   line: DEFAULT_LINE_DATA,
   sankey: DEFAULT_SANKEY_DATA,
+}
+const docs = {
+  line: { component: LineDocs, source: lineDocsSource, title: 'Line Chart' },
+  sankey: { component: SankeyDocs, source: sankeyDocsSource, title: 'Sankey Chart' },
 }
 
 function dataStorageKey(chart) {
@@ -48,6 +59,9 @@ const drafts = ref({
 })
 const source = ref(activePage.value === 'home' ? drafts.value.line : drafts.value[activePage.value])
 const canvasHeight = ref(DEFAULT_CANVAS_HEIGHT)
+const docsWidth = ref(DEFAULT_DOCS_WIDTH)
+const docsOpen = ref(false)
+const docsCopied = ref(false)
 const highlightedCode = ref('')
 const hasHighlighting = ref(false)
 const canvasFrame = useTemplateRef('canvas-frame')
@@ -57,6 +71,8 @@ let canvasResizeFrame
 let codeToHtml
 let highlightRequest = 0
 let highlightTimer
+let docsCopyTimer
+let stopDocsResize
 
 const result = computed(() => {
   try {
@@ -69,6 +85,7 @@ const homeData = computed(() => ({
   line: parseSource(drafts.value.line, DEFAULT_LINE_DATA),
   sankey: parseSource(drafts.value.sankey, DEFAULT_SANKEY_DATA),
 }))
+const activeDocs = computed(() => docs[activePage.value])
 
 watch(source, (value) => {
   if (activePage.value === 'home') return
@@ -77,12 +94,14 @@ watch(source, (value) => {
 })
 
 watch(activePage, (page, previousPage) => {
+  docsCopied.value = false
   if (previousPage !== 'home') {
     drafts.value[previousPage] = source.value
     localStorage.setItem(dataStorageKey(previousPage), source.value)
   }
 
   if (page !== 'home') source.value = drafts.value[page]
+  else docsOpen.value = false
 
   const path = pathForPage(page)
   if (window.location.pathname !== path) window.history.pushState({}, '', path)
@@ -135,6 +154,56 @@ function navigateTo(page) {
   activePage.value = page
 }
 
+function setDocsWidth(width) {
+  docsWidth.value = Math.min(Math.max(Math.round(width), MIN_DOCS_WIDTH), MAX_DOCS_WIDTH)
+}
+
+function resizeDocsBy(amount) {
+  setDocsWidth(docsWidth.value + amount)
+}
+
+function startDocsResize(event) {
+  if (event.button !== 0) return
+
+  event.preventDefault()
+  const startX = event.clientX
+  const startWidth = docsWidth.value
+
+  function stop() {
+    window.removeEventListener('pointermove', move)
+    window.removeEventListener('pointerup', stop)
+    window.removeEventListener('pointercancel', stop)
+    document.body.classList.remove('is-resizing-docs')
+    stopDocsResize = undefined
+  }
+
+  function move(moveEvent) {
+    setDocsWidth(startWidth + startX - moveEvent.clientX)
+  }
+
+  stopDocsResize?.()
+  stopDocsResize = stop
+  document.body.classList.add('is-resizing-docs')
+  window.addEventListener('pointermove', move)
+  window.addEventListener('pointerup', stop)
+  window.addEventListener('pointercancel', stop)
+}
+
+async function copyDocs() {
+  if (!navigator.clipboard?.writeText || !activeDocs.value) return
+
+  try {
+    await navigator.clipboard.writeText(activeDocs.value.source)
+    docsCopied.value = true
+    clearTimeout(docsCopyTimer)
+    docsCopyTimer = setTimeout(() => {
+      docsCopied.value = false
+    }, 1600)
+  } catch {
+    docsCopied.value = false
+  }
+}
+
 function syncPageFromPath() {
   activePage.value = pageFromPath(window.location.pathname)
 }
@@ -178,7 +247,9 @@ onBeforeUnmount(() => {
   window.removeEventListener('popstate', syncPageFromPath)
   highlightRequest += 1
   clearTimeout(highlightTimer)
+  clearTimeout(docsCopyTimer)
   canvasObserver?.disconnect()
+  stopDocsResize?.()
   if (canvasResizeFrame) cancelAnimationFrame(canvasResizeFrame)
 })
 
@@ -204,6 +275,16 @@ watch(source, scheduleHighlight)
           {{ page.label }}
         </a>
       </nav>
+      <button
+        v-if="activePage !== 'home'"
+        type="button"
+        class="button--quiet button--small docs-toggle"
+        aria-controls="chart-docs"
+        :aria-expanded="docsOpen"
+        @click="docsOpen = !docsOpen"
+      >
+        Docs
+      </button>
     </header>
 
     <section v-if="activePage === 'home'" class="home-page">
@@ -218,7 +299,12 @@ watch(source, scheduleHighlight)
       </section>
     </section>
 
-    <section v-else class="workspace">
+    <section
+      v-else
+      class="workspace"
+      :class="{ 'workspace--docs-open': docsOpen }"
+      :style="docsOpen ? { '--docs-panel-width': `${docsWidth}px` } : undefined"
+    >
       <aside class="editor-panel">
         <header class="panel-toolbar">
           <p class="panel-title">Data</p>
@@ -292,6 +378,31 @@ watch(source, scheduleHighlight)
           </div>
         </div>
       </section>
+
+      <aside v-if="docsOpen" id="chart-docs" class="docs-panel" aria-label="Chart documentation">
+        <div
+          class="docs-resize-handle"
+          role="separator"
+          aria-label="Resize documentation sidebar"
+          aria-orientation="vertical"
+          :aria-valuemin="MIN_DOCS_WIDTH"
+          :aria-valuemax="MAX_DOCS_WIDTH"
+          :aria-valuenow="docsWidth"
+          tabindex="0"
+          @pointerdown="startDocsResize"
+          @keydown.left.prevent="resizeDocsBy(20)"
+          @keydown.right.prevent="resizeDocsBy(-20)"
+        />
+        <header class="panel-toolbar docs-toolbar">
+          <p class="panel-title">{{ activeDocs.title }}</p>
+          <button type="button" class="button--quiet button--small" @click="copyDocs">
+            {{ docsCopied ? 'Copied' : 'Copy' }}
+          </button>
+        </header>
+        <article class="markdown-body">
+          <component :is="activeDocs.component" />
+        </article>
+      </aside>
     </section>
   </main>
 </template>
