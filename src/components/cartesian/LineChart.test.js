@@ -81,6 +81,24 @@ describe('LineChart', () => {
     expect(wrapper.text()).toContain('8')
   })
 
+  it('accepts string and function value formatters', () => {
+    const percentage = mount(LineChart, { props: { data, formatValue: '%' } })
+
+    expect(percentage.findAll('.cw-viz-line__value').some((label) => label.text() === '23%')).toBe(
+      true,
+    )
+    expect(
+      percentage.findAll('.cw-viz-line__y-tick').every((tick) => tick.text().endsWith('%')),
+    ).toBe(true)
+
+    const custom = mount(LineChart, {
+      props: { data, formatValue: (value) => `${value} conversations` },
+    })
+    expect(
+      custom.findAll('.cw-viz-line__value').some((label) => label.text() === '23 conversations'),
+    ).toBe(true)
+  })
+
   it('recalculates its inferred axis when the data range changes', async () => {
     const wrapper = mount(LineChart, { props: { data, width: 720 } })
 

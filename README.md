@@ -81,8 +81,16 @@ const data = {
 </script>
 
 <template>
-  <LineChart :data="data" aria-label="Conversation trends by week" />
+  <LineChart :data="data" format-value="%" aria-label="Conversation trends by week" />
 </template>
+```
+
+Pass a string to append a suffix to every value, or use `{value}` to place the
+locale-formatted number within a template. For custom logic, pass a function:
+
+```vue
+<LineChart :data="data" format-value="{value}%" />
+<LineChart :data="data" :format-value="(value, point, series) => `${value}%`" />
 ```
 
 ### Line chart props
@@ -107,7 +115,7 @@ const data = {
 | `seriesPointColor`       | `series => series.pointColor`            | Marker color or accessor; falls back to the line color        |
 | `seriesPointBorderColor` | `series => series.pointBorderColor`      | Marker-ring color or accessor; falls back to the CSS variable |
 | `seriesValueColor`       | value or label color                     | Point-label color or accessor; falls back to line color       |
-| `formatValue`            | locale number formatting                 | Tick and point-value formatter                                |
+| `formatValue`            | locale number formatting                 | String template/suffix or function for ticks and point values |
 | `ariaLabel`              | `Line chart`                             | Accessible chart name                                         |
 
 ### Line chart CSS variables

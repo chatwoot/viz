@@ -19,8 +19,8 @@ const props = defineProps({
     required: true,
   },
   formatValue: {
-    type: Function,
-    default: (value) => Number(value).toLocaleString(),
+    type: [Function, String],
+    default: () => (value) => Number(value).toLocaleString(),
   },
   height: {
     type: Number,
@@ -213,7 +213,7 @@ onBeforeUnmount(() => {
               dominant-baseline="central"
               text-anchor="end"
             >
-              {{ formatValue(tick.value) }}
+              {{ tick.formattedValue }}
             </text>
           </g>
 

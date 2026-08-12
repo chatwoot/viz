@@ -6,6 +6,15 @@ function accessorValue(accessor, datum, index) {
   return typeof accessor === 'function' ? accessor(datum, index) : accessor
 }
 
+function formattedValue(formatter, value, datum, series) {
+  const localeValue = Number(value).toLocaleString()
+
+  if (typeof formatter === 'function') return String(formatter(value, datum, series))
+  if (typeof formatter !== 'string') return localeValue
+  if (formatter.includes('{value}')) return formatter.replaceAll('{value}', localeValue)
+  return `${localeValue}${formatter}`
+}
+
 function cssIdentifier(value) {
   return String(value)
     .toLowerCase()
@@ -151,7 +160,7 @@ export function createLineLayout({
         x: category.x,
         y: cartesian.mapY(value),
       }
-      point.formattedValue = String(formatValue(value, datum, series.datum))
+      point.formattedValue = formattedValue(formatValue, value, datum, series.datum)
       point.labelY = labelY(point, series.index, cartesian.plot)
       return point
     })
@@ -164,6 +173,10 @@ export function createLineLayout({
     error: values.length ? '' : 'Line chart data must include at least one numeric value.',
     plot: cartesian.plot,
     series: normalizedSeries,
-    yTicks: cartesian.yTicks,
+    yTicks: cartesian.yTicks.map((tick) => ({
+      formattedValue: formattedValue(formatValue, tick.value),
+      value: tick.value,
+      y: tick.y,
+    })),
   }
 }
