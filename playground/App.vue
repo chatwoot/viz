@@ -71,6 +71,10 @@ function formatPointValue(value, point) {
   return point?.formattedValue ?? Number(value).toLocaleString()
 }
 
+function pointDescription(point) {
+  return point?.description
+}
+
 const activePage = ref(pageFromPath(window.location.pathname))
 const drafts = ref({
   bar: savedSource('bar'),
@@ -339,6 +343,7 @@ watch(source, scheduleHighlight)
         <BarChart
           :data="homeData.bar"
           :format-value="formatPointValue"
+          :point-description="pointDescription"
           :stacked="Boolean(homeData.bar.stacked)"
           :timeseries="Boolean(homeData.bar.timeseries)"
           aria-label="Resolution time by day"
@@ -445,6 +450,7 @@ watch(source, scheduleHighlight)
               :data="result.data"
               :format-value="formatPointValue"
               :height="canvasHeight"
+              :point-description="pointDescription"
               :stacked="Boolean(result.data.stacked)"
               :timeseries="Boolean(result.data.timeseries)"
               aria-label="Resolution time by day"

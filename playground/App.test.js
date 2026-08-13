@@ -80,6 +80,11 @@ describe('playground', () => {
     expect(wrapper.get('textarea').element.value).toBe(DEFAULT_BAR_DATA)
     expect(wrapper.findComponent({ name: 'BarChart' }).props('stacked')).toBe(false)
     expect(wrapper.findComponent({ name: 'BarChart' }).props('timeseries')).toBe(true)
+    expect(
+      wrapper.findComponent({ name: 'BarChart' }).props('pointDescription')({
+        description: 'Based on 14 conversations',
+      }),
+    ).toBe('Based on 14 conversations')
 
     const firstBar = wrapper.get('.cw-viz-bar__bar-group')
     await firstBar.trigger('pointerenter')
