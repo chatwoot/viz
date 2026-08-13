@@ -422,6 +422,7 @@ button.cw-viz-heatmap__cell {
 .cw-viz-heatmap__tooltip {
   position: absolute;
   z-index: 3;
+  width: max-content;
   min-width: 10rem;
   max-width: min(18rem, calc(100% - 1rem));
   padding: 0.75rem;

@@ -492,6 +492,7 @@ onBeforeUnmount(() => {
 .cw-viz-bar__tooltip {
   position: absolute;
   z-index: 1;
+  width: max-content;
   min-width: 10rem;
   max-width: min(16rem, calc(100% - 1rem));
   padding: 0.75rem;
