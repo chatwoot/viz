@@ -4,3 +4,4 @@ coverage
 bundle-report.html
 .DS_Store
 *.local
+.pnpm-store
