@@ -67,6 +67,10 @@ function parseSource(source, fallback) {
   }
 }
 
+function formatPointValue(value, point) {
+  return point?.formattedValue ?? Number(value).toLocaleString()
+}
+
 const activePage = ref(pageFromPath(window.location.pathname))
 const drafts = ref({
   bar: savedSource('bar'),
@@ -334,9 +338,10 @@ watch(source, scheduleHighlight)
         <h2 id="home-bar-title">Bar</h2>
         <BarChart
           :data="homeData.bar"
+          :format-value="formatPointValue"
           :stacked="Boolean(homeData.bar.stacked)"
           :timeseries="Boolean(homeData.bar.timeseries)"
-          aria-label="Conversation volume by week"
+          aria-label="Resolution time by day"
         />
       </section>
 
@@ -438,10 +443,11 @@ watch(source, scheduleHighlight)
             <BarChart
               v-else-if="result.data && activePage === 'bar'"
               :data="result.data"
+              :format-value="formatPointValue"
               :height="canvasHeight"
               :stacked="Boolean(result.data.stacked)"
               :timeseries="Boolean(result.data.timeseries)"
-              aria-label="Conversation volume by week"
+              aria-label="Resolution time by day"
             />
             <SankeyChart
               v-else-if="result.data && activePage === 'sankey'"

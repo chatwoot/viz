@@ -41,6 +41,7 @@ export function createLineLayout({
   data,
   formatValue,
   height,
+  pointDescription,
   pointValue,
   seriesColor,
   seriesId,
@@ -122,9 +123,19 @@ export function createLineLayout({
 
       if (value === undefined) return null
 
+      const rawDescription =
+        typeof pointDescription === 'function'
+          ? pointDescription(datum, pointIndex, series.datum)
+          : undefined
+      const description =
+        rawDescription === undefined || rawDescription === null || rawDescription === ''
+          ? undefined
+          : String(rawDescription)
+
       const point = {
         category,
         datum,
+        description,
         index: pointIndex,
         value,
         x: category.x,

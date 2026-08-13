@@ -111,6 +111,7 @@ Rules for Cartesian data:
 - Use a number for a simple point. Use `{ value, ...metadata }` when click
   handlers need the original record or other metadata.
 - `value` and `y` are both accepted as the numeric field on point objects.
+- Point objects may include an optional `description` for muted supporting text in tooltips.
 - Missing and non-numeric line points break the line. Missing and non-numeric
   bar points are skipped.
 - Set `timeseries` on `BarChart` when categories are ordered dates or periods;
@@ -286,7 +287,8 @@ records solely to rename fields:
 ```
 
 - Bar and Line: `categoryLabel`, `seriesId`, `seriesLabel`, `seriesValues`,
-  `pointValue`, and color accessors.
+  `pointValue`, `pointDescription`, and color accessors. `pointDescription` defaults to the
+  point object's optional `description` field.
 - Heatmap: `columnId`, `columnLabel`, `rowId`, `rowLabel`, `rowDescription`,
   `rowValues`, `cellValue`, and `cellColor`.
 - Sankey: `nodeId`, `nodeLabel`, `nodeValue`, `nodeColor`, `linkValue`, and

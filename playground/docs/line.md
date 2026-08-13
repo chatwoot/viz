@@ -40,7 +40,8 @@ Hover or focus a point to see a rich HTML tooltip containing every series value 
 - `categories` controls the x-axis labels.
 - `series` accepts any number of lines.
 - Each series supports `id`, `label`, `color`, `pointColor`, `pointBorderColor`, `valueColor`, and `data`.
-- A point can be a number or an object with a `value` or `y` field.
+- A point can be a number or an object with a `value` or `y` field. Add an optional
+  `description` to show muted supporting text in its tooltip.
 - Missing or non-numeric points break the line without hiding valid values.
 
 ```json
@@ -110,6 +111,8 @@ The callback receives `item`, `category`, `series`, `value`, `formattedValue`, t
 
 - Set `showValues` to `false` to hide labels beside the dots.
 - Set `showTooltip` to `false` to disable the HTML tooltip.
+- `pointDescription` maps point metadata to optional tooltip supporting text. By default it
+  reads `point.description`.
 - Use `pointRadius` to change the marker size.
 - Use CSS variables such as `--cw-viz-line-width` and `--cw-viz-line-tooltip-background` for presentation.
 
@@ -122,7 +125,12 @@ Use point objects when a point needs metadata in addition to its numeric value.
 <script setup>
 const data = {
   categories: ['Jun 01 - 07'],
-  series: [{ id: 'resolved', data: [{ value: 12, status: 'above target' }] }],
+  series: [
+    {
+      id: 'resolved',
+      data: [{ value: 12, description: 'Based on 14 conversations' }],
+    },
+  ],
 }
 </script>
 ```

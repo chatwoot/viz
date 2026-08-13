@@ -143,6 +143,33 @@ describe('LineChart', () => {
     expect(wrapper.find('[role="tooltip"]').exists()).toBe(false)
   })
 
+  it('renders descriptions from point objects only when provided', async () => {
+    const wrapper = mount(LineChart, {
+      props: {
+        data: {
+          categories: ['01-Aug', '02-Aug'],
+          series: [
+            {
+              id: 'resolution-time',
+              label: 'Resolution Time',
+              data: [{ value: 747, description: 'Based on 14 conversations' }, { value: 600 }],
+            },
+          ],
+        },
+      },
+    })
+    const points = wrapper.findAll('.cw-viz-line__point-group')
+
+    await points[0].trigger('pointerenter')
+    expect(wrapper.get('.cw-viz-line__tooltip-description').text()).toBe(
+      'Based on 14 conversations',
+    )
+    expect(points[0].attributes('aria-label')).toContain('Based on 14 conversations')
+
+    await points[1].trigger('pointerenter')
+    expect(wrapper.find('.cw-viz-line__tooltip-description').exists()).toBe(false)
+  })
+
   it('can disable the tooltip', async () => {
     const wrapper = mount(LineChart, { props: { data, showTooltip: false } })
     const point = wrapper.get('.cw-viz-line__point-group')

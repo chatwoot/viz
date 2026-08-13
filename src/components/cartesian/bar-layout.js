@@ -74,6 +74,7 @@ export function createBarLayout({
   formatValue,
   height,
   maxBarWidth,
+  pointDescription,
   pointValue,
   seriesColor,
   seriesId,
@@ -195,6 +196,15 @@ export function createBarLayout({
       const value = valueMatrix[series.index][pointIndex]
       if (value === undefined) return null
 
+      const rawDescription =
+        typeof pointDescription === 'function'
+          ? pointDescription(datum, pointIndex, series.datum)
+          : undefined
+      const description =
+        rawDescription === undefined || rawDescription === null || rawDescription === ''
+          ? undefined
+          : String(rawDescription)
+
       let startValue = 0
       let endValue = value
       let centerX =
@@ -230,6 +240,7 @@ export function createBarLayout({
         category,
         centerX,
         datum,
+        description,
         endValue,
         formattedValue: formatChartValue(formatValue, value, datum, series.datum),
         height: barHeight,

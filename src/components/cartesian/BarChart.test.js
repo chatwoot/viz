@@ -100,6 +100,32 @@ describe('BarChart', () => {
     expect(wrapper.find('[role="tooltip"]').exists()).toBe(false)
   })
 
+  it('optionally renders point descriptions in the tooltip', async () => {
+    const wrapper = mount(BarChart, {
+      props: {
+        data: {
+          categories: ['01-Aug'],
+          series: [
+            {
+              id: 'resolution-time',
+              label: 'Resolution Time',
+              data: [{ value: 747, conversations: 14 }, { value: 600 }],
+            },
+          ],
+        },
+        pointDescription: (point) =>
+          point.conversations ? `Based on ${point.conversations} conversations` : undefined,
+      },
+    })
+
+    await wrapper.get('.cw-viz-bar__bar-group').trigger('pointerenter')
+
+    expect(wrapper.get('.cw-viz-bar__tooltip-description').text()).toBe('Based on 14 conversations')
+    expect(wrapper.get('.cw-viz-bar__bar-group').attributes('aria-label')).toContain(
+      'Based on 14 conversations',
+    )
+  })
+
   it('calls onItemClick for pointer and keyboard activation', async () => {
     const onItemClick = vi.fn()
     const wrapper = mount(BarChart, {

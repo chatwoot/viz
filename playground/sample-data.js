@@ -39,37 +39,78 @@ const lineData = {
 
 const barData = {
   stacked: false,
-  timeseries: false,
+  timeseries: true,
   categories: [
     {
-      id: 'jun-01-07',
-      label: 'Jun 01 - 07',
+      id: 'aug-01',
+      label: '01-Aug',
     },
     {
-      id: 'jun-08-14',
-      label: 'Jun 08 - 14',
+      id: 'aug-02',
+      label: '02-Aug',
     },
     {
-      id: 'jun-15-21',
-      label: 'Jun 15 - 21',
+      id: 'aug-03',
+      label: '03-Aug',
     },
     {
-      id: 'jun-22-30',
-      label: 'Jun 22 - 30',
+      id: 'aug-04',
+      label: '04-Aug',
+    },
+    {
+      id: 'aug-05',
+      label: '05-Aug',
+    },
+    {
+      id: 'aug-06',
+      label: '06-Aug',
+    },
+    {
+      id: 'aug-07',
+      label: '07-Aug',
     },
   ],
   series: [
     {
-      id: 'automated',
-      label: 'Automated',
-      color: '#009688',
-      data: [38, 48, 42, 55],
-    },
-    {
-      id: 'team',
-      label: 'Team',
-      color: '#b9bbc6',
-      data: [24, 31, 27, 36],
+      id: 'resolution-time',
+      label: 'Resolution Time',
+      color: '#2f80ed',
+      data: [
+        {
+          value: 747,
+          formattedValue: '12 Hr 27 Min',
+          description: 'Based on 14 conversations',
+        },
+        {
+          value: 682,
+          formattedValue: '11 Hr 22 Min',
+          description: 'Based on 18 conversations',
+        },
+        {
+          value: 795,
+          formattedValue: '13 Hr 15 Min',
+          description: 'Based on 11 conversations',
+        },
+        {
+          value: 631,
+          formattedValue: '10 Hr 31 Min',
+        },
+        {
+          value: 714,
+          formattedValue: '11 Hr 54 Min',
+          description: 'Based on 16 conversations',
+        },
+        {
+          value: 588,
+          formattedValue: '9 Hr 48 Min',
+          description: 'Based on 20 conversations',
+        },
+        {
+          value: 659,
+          formattedValue: '10 Hr 59 Min',
+          description: 'Based on 17 conversations',
+        },
+      ],
     },
   ],
 }

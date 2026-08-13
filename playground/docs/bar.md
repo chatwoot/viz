@@ -35,7 +35,8 @@ const data = {
 - `categories` controls the x-axis labels.
 - `series` accepts any number of adjacent or stacked bars.
 - Each series supports `id`, `label`, `color`, `valueColor`, and `data`.
-- A point can be a number or an object with a `value` or `y` field.
+- A point can be a number or an object with a `value` or `y` field. Add an optional
+  `description` to show muted supporting text in its tooltip.
 - Missing or non-numeric points are skipped.
 
 ```json
@@ -92,6 +93,8 @@ Set `timeseries` when categories represent ordered dates or time periods. The ch
 ## Formatting and display
 
 - `formatValue` applies to tooltips, optional bar labels, and y-axis ticks.
+- `pointDescription` maps point metadata to optional tooltip supporting text. By default it
+  reads `point.description`.
 - Set `showValues` to display values on the bars.
 - Use `barRadius` (default `4`), `barGap`, and `maxBarWidth` to tune bar geometry.
 - Set `showTooltip` to `false` to disable the rich HTML tooltip.
@@ -125,6 +128,7 @@ The callback receives `item`, `category`, `series`, `value`, `formattedValue`, t
   :series-label="(series) => series.name"
   :series-values="(series) => series.samples"
   :point-value="(point) => point.total"
+  :point-description="(point) => point.summary"
   :series-color="(series) => series.fill"
 />
 ```

@@ -79,7 +79,13 @@ describe('playground', () => {
     expect(wrapper.get('a[href="/bar"]').attributes('aria-current')).toBe('page')
     expect(wrapper.get('textarea').element.value).toBe(DEFAULT_BAR_DATA)
     expect(wrapper.findComponent({ name: 'BarChart' }).props('stacked')).toBe(false)
-    expect(wrapper.findComponent({ name: 'BarChart' }).props('timeseries')).toBe(false)
+    expect(wrapper.findComponent({ name: 'BarChart' }).props('timeseries')).toBe(true)
+
+    const firstBar = wrapper.get('.cw-viz-bar__bar-group')
+    await firstBar.trigger('pointerenter')
+
+    expect(wrapper.get('.cw-viz-bar__tooltip-value').text()).toBe('12 Hr 27 Min')
+    expect(wrapper.get('.cw-viz-bar__tooltip-description').text()).toBe('Based on 14 conversations')
 
     const options = wrapper.findAll('.chart-option input')
     await options[0].setValue(true)
@@ -87,10 +93,10 @@ describe('playground', () => {
     expect(wrapper.findComponent({ name: 'BarChart' }).props('stacked')).toBe(true)
     expect(JSON.parse(wrapper.get('textarea').element.value).stacked).toBe(true)
 
-    await options[1].setValue(true)
+    await options[1].setValue(false)
 
-    expect(wrapper.findComponent({ name: 'BarChart' }).props('timeseries')).toBe(true)
-    expect(JSON.parse(wrapper.get('textarea').element.value).timeseries).toBe(true)
+    expect(wrapper.findComponent({ name: 'BarChart' }).props('timeseries')).toBe(false)
+    expect(JSON.parse(wrapper.get('textarea').element.value).timeseries).toBe(false)
   })
 
   it('toggles rendered documentation for the active chart', async () => {

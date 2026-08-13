@@ -43,6 +43,10 @@ const props = defineProps({
     type: Function,
     default: undefined,
   },
+  pointDescription: {
+    type: Function,
+    default: (point) => point?.description,
+  },
   pointValue: {
     type: Function,
     default: (point) => (typeof point === 'number' ? point : (point?.value ?? point?.y)),
@@ -122,6 +126,7 @@ const layout = computed(() =>
     formatValue: props.formatValue,
     height: props.height,
     maxBarWidth: props.maxBarWidth,
+    pointDescription: props.pointDescription,
     pointValue: props.pointValue,
     seriesColor: props.seriesColor,
     seriesId: props.seriesId,
@@ -164,6 +169,7 @@ const tooltip = computed(() => {
       return [
         {
           color: series.color,
+          description: point.description,
           formattedValue: point.formattedValue,
           id: series.id,
           isActive: series.index === activeBar.value.seriesIndex,
@@ -355,7 +361,7 @@ onBeforeUnmount(() => {
               :data-point-index="point.index"
               :tabindex="showTooltip || onItemClick ? 0 : undefined"
               :role="onItemClick ? 'button' : undefined"
-              :aria-label="`${series.label}, ${point.category.label}: ${point.formattedValue}`"
+              :aria-label="`${series.label}, ${point.category.label}: ${point.formattedValue}${point.description ? `. ${point.description}` : ''}`"
               @click="handleItemClick(series.index, point.index, $event)"
               @keydown="handleItemKeydown(series.index, point.index, $event)"
               @pointerenter="openTooltip(series.index, point.index, $event)"
@@ -403,6 +409,9 @@ onBeforeUnmount(() => {
           <span class="cw-viz-bar__tooltip-swatch" :style="{ backgroundColor: row.color }" />
           <span class="cw-viz-bar__tooltip-label">{{ row.label }}</span>
           <strong class="cw-viz-bar__tooltip-value">{{ row.formattedValue }}</strong>
+          <span v-if="row.description" class="cw-viz-bar__tooltip-description">
+            {{ row.description }}
+          </span>
         </div>
       </div>
     </div>
@@ -521,7 +530,8 @@ onBeforeUnmount(() => {
 .cw-viz-bar__tooltip-row {
   display: grid;
   align-items: center;
-  gap: 0.45rem;
+  column-gap: 0.45rem;
+  row-gap: 0.1rem;
   grid-template-columns: auto minmax(0, 1fr) auto;
 }
 
@@ -543,6 +553,14 @@ onBeforeUnmount(() => {
 
 .cw-viz-bar__tooltip-value {
   font-variant-numeric: tabular-nums;
+}
+
+.cw-viz-bar__tooltip-description {
+  grid-column: 2 / -1;
+  color: var(--cw-viz-bar-tooltip-label-color, #60646c);
+  font-size: var(--cw-viz-bar-tooltip-description-font-size, 11px);
+  font-weight: 400;
+  overflow-wrap: anywhere;
 }
 
 @media (prefers-reduced-motion: reduce) {
