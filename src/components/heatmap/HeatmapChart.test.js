@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import HeatmapChart from './HeatmapChart.vue'
 
@@ -96,6 +96,46 @@ describe('HeatmapChart', () => {
     expect(wrapper.findAll('button.cw-viz-heatmap__cell')).toHaveLength(0)
     expect(wrapper.findAll('span.cw-viz-heatmap__cell')).toHaveLength(48)
     expect(wrapper.find('[role="tooltip"]').exists()).toBe(false)
+  })
+
+  it('calls onItemClick with the original cell, row, and column context', async () => {
+    const onItemClick = vi.fn()
+    const column = { id: 'hour-1', label: '01:00' }
+    const cell = { status: 'busy', value: 8 }
+    const row = {
+      data: [cell],
+      description: 'Aug 10, 2026',
+      id: 'monday',
+      label: 'Monday',
+    }
+    const wrapper = mount(HeatmapChart, {
+      props: {
+        data: { columns: [column], rows: [row] },
+        formatValue: '{value} conversations',
+        onItemClick,
+        showTooltip: false,
+      },
+    })
+
+    await wrapper.get('button.cw-viz-heatmap__cell').trigger('click')
+
+    expect(onItemClick).toHaveBeenCalledOnce()
+    expect(onItemClick.mock.calls[0][0]).toMatchObject({
+      column,
+      columnId: 'hour-1',
+      columnIndex: 0,
+      columnLabel: '01:00',
+      formattedValue: '8 conversations',
+      item: cell,
+      itemType: 'cell',
+      row,
+      rowDescription: 'Aug 10, 2026',
+      rowId: 'monday',
+      rowIndex: 0,
+      rowLabel: 'Monday',
+      value: 8,
+    })
+    expect(onItemClick.mock.calls[0][0].event).toBeInstanceOf(MouseEvent)
   })
 
   it('renders missing values as non-interactive empty cells', () => {

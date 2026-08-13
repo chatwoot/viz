@@ -50,6 +50,10 @@ const props = defineProps({
     type: Number,
     default: 4,
   },
+  onItemClick: {
+    type: Function,
+    default: undefined,
+  },
   rowDescription: {
     type: Function,
     default: (row) => row?.description ?? row?.sublabel ?? '',
@@ -155,6 +159,27 @@ function openTooltip(rowIndex, columnIndex, event) {
 function closeTooltip() {
   activeCell.value = null
 }
+
+function selectCell(row, cell, event) {
+  if (!props.onItemClick) return
+
+  props.onItemClick({
+    column: cell.column.datum,
+    columnId: cell.column.id,
+    columnIndex: cell.column.index,
+    columnLabel: cell.column.label,
+    event,
+    formattedValue: cell.formattedValue,
+    item: cell.datum,
+    itemType: 'cell',
+    row: row.datum,
+    rowDescription: row.description,
+    rowId: row.id,
+    rowIndex: row.index,
+    rowLabel: row.label,
+    value: cell.value,
+  })
+}
 </script>
 
 <template>
@@ -174,8 +199,8 @@ function closeTooltip() {
           <template v-for="cell in row.cells" :key="cell.id">
             <component
               v-if="cell.value !== undefined"
-              :is="showTooltip ? 'button' : 'span'"
-              :type="showTooltip ? 'button' : undefined"
+              :is="showTooltip || onItemClick ? 'button' : 'span'"
+              :type="showTooltip || onItemClick ? 'button' : undefined"
               class="cw-viz-heatmap__cell"
               :class="`cw-viz-heatmap__cell--level-${cell.level}`"
               :style="cell.color ? { backgroundColor: cell.color } : undefined"
@@ -186,6 +211,7 @@ function closeTooltip() {
               @focus="openTooltip(row.index, cell.column.index, $event)"
               @blur="closeTooltip"
               @keydown.esc="closeTooltip"
+              @click="selectCell(row, cell, $event)"
             />
             <span v-else class="cw-viz-heatmap__cell cw-viz-heatmap__cell--empty" role="gridcell" />
           </template>

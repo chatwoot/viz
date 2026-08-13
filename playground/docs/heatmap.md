@@ -74,7 +74,7 @@ The color domain is inferred from all numeric cells. Pass `domain` when several 
 
 - `cellHeight` (`32`), `cellMinWidth` (`28`), and `gap` (`4`) control matrix density.
 - `rowLabelWidth` (`120`) reserves space for the client-provided row labels.
-- `showTooltip="false"` disables interactive cells and the rich HTML tooltip.
+- `showTooltip="false"` disables the rich HTML tooltip. Cells remain interactive when `onItemClick` is provided.
 - The matrix scrolls horizontally when its columns cannot fit the container.
 
 ```css
@@ -86,6 +86,24 @@ The color domain is inferred from all numeric cells. Pass `domain` when several 
   --cw-viz-heatmap-level-4-color: #1c73dc;
 }
 ```
+
+## Item clicks
+
+Pass an `onItemClick` callback, or use Vue's `@item-click` syntax. Numeric cells become native buttons, so mouse clicks, Enter, and Space all invoke the callback. Missing cells remain non-interactive.
+
+```vue
+<script setup>
+function openHourlyReport({ item, row, column, value }) {
+  // item, row, and column are the original values from data.
+}
+</script>
+
+<template>
+  <HeatmapChart :data="data" @item-click="openHourlyReport" />
+</template>
+```
+
+The callback receives `itemType`, `item`, `row`, `column`, `value`, `formattedValue`, row and column ids, labels, and indexes, plus the native `event`.
 
 <details>
 <summary>Custom data accessors</summary>
