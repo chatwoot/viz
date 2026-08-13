@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { createBandScale, createCartesianLayout, createPointScale } from './cartesian-layout.js'
 
@@ -31,6 +31,85 @@ describe('cartesian layout', () => {
 
     expect(layout.domain).toEqual([10, 55])
     expect(layout.yTicks.map((tick) => tick.value)).toEqual([15, 25, 35, 45, 55])
+  })
+
+  it('uses a positive y step size before the automatic tick count', () => {
+    const layout = createCartesianLayout({
+      categoryCount: 2,
+      height: 300,
+      values: [12, 51],
+      width: 600,
+      yStepSize: 10,
+      yTickCount: 20,
+    })
+
+    expect(layout.domain).toEqual([10, 60])
+    expect(layout.yTicks.map((tick) => tick.value)).toEqual([10, 20, 30, 40, 50, 60])
+  })
+
+  it('resolves a functional y step size with the scale context', () => {
+    const yStepSize = vi.fn(() => 20)
+    const layout = createCartesianLayout({
+      categoryCount: 2,
+      height: 300,
+      includeZero: true,
+      values: [12, 51],
+      width: 600,
+      yStepSize,
+      yTickCount: 6,
+    })
+
+    expect(yStepSize).toHaveBeenCalledWith({
+      max: 51,
+      min: 0,
+      tickCount: 6,
+      values: [12, 51],
+    })
+    expect(layout.domain).toEqual([0, 60])
+    expect(layout.yTicks.map((tick) => tick.value)).toEqual([0, 20, 40, 60])
+  })
+
+  it('gives explicit y ticks precedence over the y step size', () => {
+    const yStepSize = vi.fn(() => 20)
+    const layout = createCartesianLayout({
+      categoryCount: 2,
+      height: 300,
+      values: [12, 51],
+      width: 600,
+      yStepSize,
+      yTicks: [15, 35, 55],
+    })
+
+    expect(yStepSize).not.toHaveBeenCalled()
+    expect(layout.yTicks.map((tick) => tick.value)).toEqual([15, 35, 55])
+  })
+
+  it('preserves an explicit y domain while using step-sized ticks', () => {
+    const layout = createCartesianLayout({
+      categoryCount: 2,
+      height: 300,
+      values: [12, 51],
+      width: 600,
+      yDomain: [13, 52],
+      yStepSize: 10,
+    })
+
+    expect(layout.domain).toEqual([13, 52])
+    expect(layout.yTicks.map((tick) => tick.value)).toEqual([20, 30, 40, 50])
+  })
+
+  it('falls back to automatic ticks when the y step size is not positive', () => {
+    const layout = createCartesianLayout({
+      categoryCount: 2,
+      height: 300,
+      values: [12, 51],
+      width: 600,
+      yStepSize: () => 0,
+      yTickCount: 6,
+    })
+
+    expect(layout.domain).toEqual([10, 60])
+    expect(layout.yTicks.map((tick) => tick.value)).toEqual([10, 20, 30, 40, 50, 60])
   })
 
   it('provides point and band positions for line and bar charts', () => {

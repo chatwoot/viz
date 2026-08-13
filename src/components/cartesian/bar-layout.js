@@ -84,6 +84,7 @@ export function createBarLayout({
   timeseries,
   width,
   yDomain,
+  yStepSize,
   yTickCount,
   yTicks,
 }) {
@@ -142,6 +143,7 @@ export function createBarLayout({
     values: domainValues,
     width,
     yDomain,
+    yStepSize,
     yTickCount,
     yTicks,
   })

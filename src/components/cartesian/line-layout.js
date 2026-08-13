@@ -52,6 +52,7 @@ export function createLineLayout({
   width,
   xInset,
   yDomain,
+  yStepSize,
   yTickCount,
   yTicks,
 }) {
@@ -101,6 +102,7 @@ export function createLineLayout({
     width,
     xInset,
     yDomain,
+    yStepSize,
     yTickCount,
     yTicks,
   })

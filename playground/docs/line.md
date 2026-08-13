@@ -76,7 +76,17 @@ Pass `format-value="%"` to append a suffix or use `{value}` inside a template. A
 <LineChart :data="data" :format-value="(value, point, series) => `${value}%`" />
 ```
 
-Formatting applies to point labels, tooltip values, and y-axis ticks. Use `yDomain` or `yTicks` only when an exact scale is required.
+Formatting applies to point labels, tooltip values, and y-axis ticks.
+
+Use `yStepSize` to set a positive interval between inferred y-axis ticks. It accepts either a number or a function receiving `{ min, max, values, tickCount }`.
+
+```vue
+<LineChart :data="data" :y-step-size="10" />
+
+<LineChart :data="data" :y-step-size="({ max }) => (max > 1_000 ? 250 : 50)" />
+```
+
+For an inferred domain, the chart rounds the minimum down and maximum up to the resolved step. An explicit `yDomain` remains unchanged. Scale options use this precedence: `yTicks`, then `yStepSize`, then automatic ticks based on `yTickCount` (default `5`).
 
 ## Item clicks
 

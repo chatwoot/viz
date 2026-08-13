@@ -127,13 +127,16 @@ Useful props:
 | `showValues`                         | Bar, Line  | Bar defaults to `false`; Line defaults to `true`                                     |
 | `yDomain`                            | Bar, Line  | Explicit `[minimum, maximum]`; otherwise inferred                                    |
 | `yTicks`                             | Bar, Line  | Explicit tick values inside the domain                                               |
+| `yStepSize`                          | Bar, Line  | Positive tick interval or function receiving `{ min, max, values, tickCount }`       |
 | `yTickCount`                         | Bar, Line  | Preferred inferred tick count; defaults to `5`                                       |
 | `height`                             | Bar, Line  | SVG view-box height; defaults to `360`                                               |
 | `barGap`, `barRadius`, `maxBarWidth` | Bar        | Tune grouped/stacked bar geometry                                                    |
 | `pointRadius`, `xInset`              | Line       | Tune markers and horizontal plot inset                                               |
 
-Prefer an inferred domain. Add `yDomain` or `yTicks` only when the product
-requires an exact, comparable scale.
+Scale options use `yTicks`, then `yStepSize`, then automatic ticks based on
+`yTickCount`. A step rounds inferred domain bounds outward while an explicit
+`yDomain` remains unchanged. Prefer an inferred domain. Add `yDomain`, `yTicks`,
+or `yStepSize` only when the product requires an exact, comparable scale.
 
 ## Heatmaps
 

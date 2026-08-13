@@ -68,6 +68,17 @@ describe('BarChart', () => {
     expect(wrapper.get('.cw-viz-bar__value').text()).toBe('8%')
   })
 
+  it('renders y-axis ticks using a fixed step size', () => {
+    const wrapper = mount(BarChart, { props: { data, yStepSize: 15, yTickCount: 20 } })
+
+    expect(wrapper.findAll('.cw-viz-bar__y-tick').map((tick) => tick.text())).toEqual([
+      '0',
+      '15',
+      '30',
+      '45',
+    ])
+  })
+
   it('renders a rich tooltip with every series for a category', async () => {
     const wrapper = mount(BarChart, { props: { data, width: 720 } })
     const resolvedBar = wrapper

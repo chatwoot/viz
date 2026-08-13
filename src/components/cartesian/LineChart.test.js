@@ -103,6 +103,24 @@ describe('LineChart', () => {
     ).toBe(true)
   })
 
+  it('renders y-axis ticks using a functional step size', () => {
+    const yStepSize = vi.fn(() => 20)
+    const wrapper = mount(LineChart, { props: { data, yStepSize, yTickCount: 6 } })
+
+    expect(yStepSize).toHaveBeenCalledWith({
+      max: 51,
+      min: 12,
+      tickCount: 6,
+      values: [30, 40, 35, 51, 12, 29, 23, 39],
+    })
+    expect(wrapper.findAll('.cw-viz-line__y-tick').map((tick) => tick.text())).toEqual([
+      '0',
+      '20',
+      '40',
+      '60',
+    ])
+  })
+
   it('renders a rich HTML tooltip with every series for the hovered category', async () => {
     const wrapper = mount(LineChart, { props: { data, width: 720 } })
     const resolvedPoint = wrapper

@@ -69,6 +69,18 @@ Grouped bars are the default. Add `stacked` to accumulate each category while ke
 
 The inferred y-axis includes zero. In stacked mode, it uses the complete stack totals rather than individual segment values.
 
+## Y-axis scale
+
+Use `yStepSize` to set a positive interval between inferred y-axis ticks. It accepts either a number or a function receiving `{ min, max, values, tickCount }`.
+
+```vue
+<BarChart :data="data" :y-step-size="10" />
+
+<BarChart :data="data" :y-step-size="({ max }) => (max > 1_000 ? 250 : 50)" />
+```
+
+For an inferred domain, the chart rounds the minimum down and maximum up to the resolved step. An explicit `yDomain` remains unchanged. Scale options use this precedence: `yTicks`, then `yStepSize`, then automatic ticks based on `yTickCount` (default `5`).
+
 ## Time-series labels
 
 Set `timeseries` when categories represent ordered dates or time periods. The chart then adapts x-axis label density to the available width while always showing the first and last labels.

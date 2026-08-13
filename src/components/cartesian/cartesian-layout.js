@@ -72,6 +72,14 @@ function roundNumber(value, step) {
   return Number(value.toFixed(decimalPlaces(step)))
 }
 
+function stepBoundary(value, step, direction) {
+  const quotient = value / step
+  const tolerance = Number.EPSILON * Math.max(Math.abs(quotient), 1) * 4
+  const roundedQuotient =
+    direction === 'down' ? Math.floor(quotient + tolerance) : Math.ceil(quotient - tolerance)
+  return roundNumber(roundedQuotient * step, step)
+}
+
 export function niceStep(span, tickCount = DEFAULT_TICK_COUNT) {
   const intervals = Math.max(Math.floor(tickCount) - 1, 1)
   const roughStep = Math.abs(span) / intervals
@@ -84,33 +92,24 @@ export function niceStep(span, tickCount = DEFAULT_TICK_COUNT) {
   return factor * power
 }
 
-function normalizeDomain(values, requestedDomain, tickCount, includeZero) {
+function createDomainDetails(values, requestedDomain, includeZero) {
   const requestedMinimum = finiteNumber(requestedDomain?.[0])
   const requestedMaximum = finiteNumber(requestedDomain?.[1])
+  const validValues = values
+    .map((value) => finiteNumber(value))
+    .filter((value) => value !== undefined)
 
   if (requestedMinimum !== undefined && requestedMaximum !== undefined) {
-    if (requestedMinimum === requestedMaximum) {
-      const padding = Math.abs(requestedMinimum || 1) * 0.1
-      return {
-        domain: [requestedMinimum - padding, requestedMaximum + padding],
-        isExplicit: true,
-        step: padding,
-      }
-    }
-
     return {
       domain: [
         Math.min(requestedMinimum, requestedMaximum),
         Math.max(requestedMinimum, requestedMaximum),
       ],
       isExplicit: true,
-      step: Math.abs(requestedMaximum - requestedMinimum) / Math.max(tickCount - 1, 1),
+      values: validValues,
     }
   }
 
-  const validValues = values
-    .map((value) => finiteNumber(value))
-    .filter((value) => value !== undefined)
   let minimum = validValues.length ? Math.min(...validValues) : 0
   let maximum = validValues.length ? Math.max(...validValues) : 1
 
@@ -119,34 +118,56 @@ function normalizeDomain(values, requestedDomain, tickCount, includeZero) {
     maximum = Math.max(maximum, 0)
   }
 
+  return { domain: [minimum, maximum], isExplicit: false, values: validValues }
+}
+
+function paddedDomainSpan([minimum, maximum]) {
+  if (minimum !== maximum) return maximum - minimum
+
+  const padding = Math.abs(minimum || 1) * 0.1
+  return padding * 2
+}
+
+function resolveStepSize(stepSize, context) {
+  const value = typeof stepSize === 'function' ? stepSize(context) : stepSize
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : undefined
+}
+
+function normalizeDomain(details, step) {
+  if (details.isExplicit) return { ...details, step }
+
+  let [minimum, maximum] = details.domain
   if (minimum === maximum) {
     const padding = Math.abs(minimum || 1) * 0.1
     minimum -= padding
     maximum += padding
   }
 
-  const step = niceStep(maximum - minimum, tickCount)
-  const domainMinimum = Math.floor(minimum / step) * step
-  const domainMaximum = Math.ceil(maximum / step) * step
+  let domainMinimum = stepBoundary(minimum, step, 'down')
+  let domainMaximum = stepBoundary(maximum, step, 'up')
+
+  if (domainMinimum === domainMaximum) {
+    domainMinimum = roundNumber(domainMinimum - step, step)
+    domainMaximum = roundNumber(domainMaximum + step, step)
+  }
 
   return {
-    domain: [roundNumber(domainMinimum, step), roundNumber(domainMaximum, step)],
+    ...details,
+    domain: [domainMinimum, domainMaximum],
     isExplicit: false,
     step,
   }
 }
 
-function createTicks(domainDetails, requestedTicks, tickCount) {
+function createTicks(domainDetails, requestedTicks, tickCount, useStepSize) {
   const [minimum, maximum] = domainDetails.domain
-  const explicitTicks = Array.isArray(requestedTicks)
-    ? requestedTicks
-        .map((value) => finiteNumber(value))
-        .filter((value) => value !== undefined && value >= minimum && value <= maximum)
-    : []
+  const explicitTicks = requestedTicks.filter((value) => value >= minimum && value <= maximum)
 
   if (explicitTicks.length) return explicitTicks
 
-  if (domainDetails.isExplicit) {
+  if (domainDetails.isExplicit && !useStepSize) {
+    if (minimum === maximum) return [minimum]
+
     const intervals = Math.max(Math.floor(tickCount) - 1, 1)
     const step = (maximum - minimum) / intervals
     return Array.from({ length: intervals + 1 }, (_, index) =>
@@ -156,7 +177,7 @@ function createTicks(domainDetails, requestedTicks, tickCount) {
 
   const ticks = []
   const step = domainDetails.step
-  const firstTick = Math.ceil(minimum / step) * step
+  const firstTick = stepBoundary(minimum, step, 'up')
 
   for (let value = firstTick; value <= maximum + step / 2; value += step) {
     ticks.push(roundNumber(value, step))
@@ -205,6 +226,7 @@ export function createCartesianLayout({
   width,
   xInset,
   yDomain,
+  yStepSize,
   yTickCount = DEFAULT_TICK_COUNT,
   yTicks,
 }) {
@@ -224,8 +246,21 @@ export function createCartesianLayout({
   plot.width = plot.right - plot.left
 
   const tickCount = Math.max(Math.floor(finiteNumber(yTickCount, DEFAULT_TICK_COUNT)), 2)
-  const domainDetails = normalizeDomain(values, yDomain, tickCount, includeZero)
-  const [domainMinimum, domainMaximum] = domainDetails.domain
+  const initialDomainDetails = createDomainDetails(values, yDomain, includeZero)
+  const requestedTicks = Array.isArray(yTicks)
+    ? yTicks.map((value) => finiteNumber(value)).filter((value) => value !== undefined)
+    : []
+  const requestedStep = requestedTicks.length
+    ? undefined
+    : resolveStepSize(yStepSize, {
+        max: initialDomainDetails.domain[1],
+        min: initialDomainDetails.domain[0],
+        tickCount,
+        values: [...initialDomainDetails.values],
+      })
+  const step = requestedStep ?? niceStep(paddedDomainSpan(initialDomainDetails.domain), tickCount)
+  const normalizedDomain = normalizeDomain(initialDomainDetails, step)
+  const [domainMinimum, domainMaximum] = normalizedDomain.domain
   const domainSpan = domainMaximum - domainMinimum || 1
   const mapY = (value) =>
     plot.bottom - ((finiteNumber(value, domainMinimum) - domainMinimum) / domainSpan) * plot.height
@@ -237,12 +272,17 @@ export function createCartesianLayout({
   })
 
   return {
-    domain: domainDetails.domain,
+    domain: normalizedDomain.domain,
     mapY,
     plot,
     xPositions: pointScale.positions,
     xStep: pointScale.step,
-    yTicks: createTicks(domainDetails, yTicks, tickCount).map((value) => ({
+    yTicks: createTicks(
+      normalizedDomain,
+      requestedTicks,
+      tickCount,
+      requestedStep !== undefined,
+    ).map((value) => ({
       value,
       y: mapY(value),
     })),

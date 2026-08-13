@@ -91,6 +91,11 @@ const props = defineProps({
     type: Array,
     default: undefined,
   },
+  yStepSize: {
+    type: [Number, Function],
+    default: undefined,
+    validator: (value) => typeof value === 'function' || (Number.isFinite(value) && value > 0),
+  },
   yTickCount: {
     type: Number,
     default: 5,
@@ -127,6 +132,7 @@ const layout = computed(() =>
     timeseries: props.timeseries,
     width: chartWidth.value,
     yDomain: props.yDomain,
+    yStepSize: props.yStepSize,
     yTickCount: props.yTickCount,
     yTicks: props.yTicks,
   }),
