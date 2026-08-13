@@ -78,6 +78,24 @@ Pass `format-value="%"` to append a suffix or use `{value}` inside a template. A
 
 Formatting applies to point labels, tooltip values, and y-axis ticks. Use `yDomain` or `yTicks` only when an exact scale is required.
 
+## Item clicks
+
+Pass an `onItemClick` callback, or use Vue's `@item-click` syntax. Mouse clicks, Enter, and Space all invoke it.
+
+```vue
+<script setup>
+function openConversationReport({ item, category, series, value }) {
+  // item, category, and series are the original objects from data.
+}
+</script>
+
+<template>
+  <LineChart :data="data" @item-click="openConversationReport" />
+</template>
+```
+
+The callback receives `item`, `category`, `series`, `value`, `formattedValue`, their indexes and labels, and the native `event`.
+
 ## Display options
 
 - Set `showValues` to `false` to hide labels beside the dots.

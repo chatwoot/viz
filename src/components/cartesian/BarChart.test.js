@@ -88,6 +88,36 @@ describe('BarChart', () => {
     expect(wrapper.find('[role="tooltip"]').exists()).toBe(false)
   })
 
+  it('calls onItemClick for pointer and keyboard activation', async () => {
+    const onItemClick = vi.fn()
+    const wrapper = mount(BarChart, {
+      props: { data, onItemClick, showTooltip: false },
+    })
+    const bar = wrapper.get('[data-series-id="resolved"]').findAll('.cw-viz-bar__bar-group')[1]
+
+    expect(bar.attributes('role')).toBe('button')
+    expect(bar.attributes('tabindex')).toBe('0')
+    await bar.trigger('click')
+    await bar.trigger('keydown', { key: 'Enter' })
+
+    expect(onItemClick).toHaveBeenCalledTimes(2)
+    expect(onItemClick.mock.calls[0][0]).toMatchObject({
+      category: 'Jun 08 - 14',
+      categoryIndex: 1,
+      categoryLabel: 'Jun 08 - 14',
+      formattedValue: '29',
+      item: 29,
+      pointIndex: 1,
+      series: data.series[1],
+      seriesId: 'resolved',
+      seriesIndex: 1,
+      seriesLabel: 'Resolved',
+      value: 29,
+    })
+    expect(onItemClick.mock.calls[0][0].event).toBeInstanceOf(MouseEvent)
+    expect(onItemClick.mock.calls[1][0].event).toBeInstanceOf(KeyboardEvent)
+  })
+
   it('thins dense time-series ticks without dropping the endpoints', () => {
     const categories = Array.from({ length: 40 }, (_, index) => `Day ${index + 1}`)
     const wrapper = mount(BarChart, {

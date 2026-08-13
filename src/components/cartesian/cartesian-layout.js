@@ -14,6 +14,23 @@ export function formatChartValue(formatter, value, datum, series) {
   return `${localeValue}${formatter}`
 }
 
+export function createCartesianItemPayload(series, point, event) {
+  return {
+    category: point.category.datum,
+    categoryIndex: point.category.index,
+    categoryLabel: point.category.label,
+    event,
+    formattedValue: point.formattedValue,
+    item: point.datum,
+    pointIndex: point.index,
+    series: series.datum,
+    seriesId: series.id,
+    seriesIndex: series.index,
+    seriesLabel: series.label,
+    value: point.value,
+  }
+}
+
 function cssIdentifier(value) {
   return String(value)
     .toLowerCase()

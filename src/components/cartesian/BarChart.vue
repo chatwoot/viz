@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue'
 
 import { createBarLayout } from './bar-layout.js'
+import { createCartesianItemPayload } from './cartesian-layout.js'
 
 defineOptions({ name: 'BarChart' })
 
@@ -37,6 +38,10 @@ const props = defineProps({
   maxBarWidth: {
     type: Number,
     default: 48,
+  },
+  onItemClick: {
+    type: Function,
+    default: undefined,
   },
   pointValue: {
     type: Function,
@@ -193,6 +198,23 @@ function closeTooltip() {
   activeBar.value = null
 }
 
+function handleItemClick(seriesIndex, pointIndex, event) {
+  if (!props.onItemClick) return
+
+  const series = layout.value.series[seriesIndex]
+  const point = series?.points[pointIndex]
+  if (!series || !point) return
+
+  props.onItemClick(createCartesianItemPayload(series, point, event))
+}
+
+function handleItemKeydown(seriesIndex, pointIndex, event) {
+  if (!props.onItemClick || !['Enter', ' '].includes(event.key)) return
+
+  event.preventDefault()
+  handleItemClick(seriesIndex, pointIndex, event)
+}
+
 function scheduleWidthUpdate(width) {
   if (typeof requestAnimationFrame === 'undefined') {
     updateWidth(width)
@@ -322,10 +344,14 @@ onBeforeUnmount(() => {
               v-for="point in series.points.filter(Boolean)"
               :key="point.index"
               class="cw-viz-bar__bar-group"
+              :class="{ 'cw-viz-bar__bar-group--clickable': onItemClick }"
               :transform="`translate(${point.centerX} ${point.anchorY})`"
               :data-point-index="point.index"
-              :tabindex="showTooltip ? 0 : undefined"
+              :tabindex="showTooltip || onItemClick ? 0 : undefined"
+              :role="onItemClick ? 'button' : undefined"
               :aria-label="`${series.label}, ${point.category.label}: ${point.formattedValue}`"
+              @click="handleItemClick(series.index, point.index, $event)"
+              @keydown="handleItemKeydown(series.index, point.index, $event)"
               @pointerenter="openTooltip(series.index, point.index, $event)"
               @pointerleave="closeTooltip"
               @focus="openTooltip(series.index, point.index, $event)"
@@ -417,6 +443,10 @@ onBeforeUnmount(() => {
 
 .cw-viz-bar__bar {
   transition: opacity 120ms ease;
+}
+
+.cw-viz-bar__bar-group--clickable {
+  cursor: pointer;
 }
 
 .cw-viz-bar__bar-group:hover .cw-viz-bar__bar,

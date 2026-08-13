@@ -59,6 +59,22 @@ Import the stylesheet once in the consuming application:
 import '@chatwoot/viz/style.css'
 ```
 
+### Cartesian item clicks
+
+`BarChart` and `LineChart` accept an `onItemClick` callback, also available through Vue's
+`@item-click` syntax. It runs for pointer clicks and Enter/Space keyboard activation.
+
+```vue
+<LineChart
+  :data="data"
+  @item-click="({ item, category, series, value }) => openReport(item, category, series, value)"
+/>
+```
+
+The payload includes the original `item`, `category`, and `series` values; `value` and
+`formattedValue`; category, point, and series indexes; series/category labels and ids; and the
+native `event`.
+
 ## Bar chart
 
 The bar chart uses the same `{ categories, series }` shape as the line chart.
@@ -102,6 +118,7 @@ labels, and the rich HTML tooltip.
 | `maxBarWidth`      | `48`                                     | Maximum width of a grouped bar or complete stack              |
 | `showValues`       | `false`                                  | Show formatted values on or beside bars                       |
 | `showTooltip`      | `true`                                   | Show an HTML tooltip with every series for a category         |
+| `onItemClick`      | —                                        | Callback invoked when a bar is activated                      |
 | `yDomain`          | inferred                                 | Optional `[minimum, maximum]` numeric domain                  |
 | `yTicks`           | inferred                                 | Optional array of exact y-axis tick values                    |
 | `yTickCount`       | `5`                                      | Target tick count when ticks are inferred                     |
@@ -269,6 +286,7 @@ locale-formatted number within a template. For custom logic, pass a function:
 | `pointRadius`            | `5`                                      | Marker radius                                                 |
 | `showValues`             | `true`                                   | Show a formatted value next to each marker                    |
 | `showTooltip`            | `true`                                   | Show an HTML tooltip with all series values for a category    |
+| `onItemClick`            | —                                        | Callback invoked when a point is activated                    |
 | `yDomain`                | inferred                                 | Optional `[minimum, maximum]` numeric domain                  |
 | `yTicks`                 | inferred                                 | Optional array of exact y-axis tick values                    |
 | `yTickCount`             | `5`                                      | Target tick count when ticks are inferred                     |

@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue'
 
+import { createCartesianItemPayload } from './cartesian-layout.js'
 import { createLineLayout } from './line-layout.js'
 
 defineOptions({ name: 'LineChart' })
@@ -25,6 +26,10 @@ const props = defineProps({
   height: {
     type: Number,
     default: 360,
+  },
+  onItemClick: {
+    type: Function,
+    default: undefined,
   },
   pointRadius: {
     type: Number,
@@ -186,6 +191,23 @@ function closeTooltip() {
   activePoint.value = null
 }
 
+function handleItemClick(seriesIndex, pointIndex, event) {
+  if (!props.onItemClick) return
+
+  const series = layout.value.series[seriesIndex]
+  const point = series?.points[pointIndex]
+  if (!series || !point) return
+
+  props.onItemClick(createCartesianItemPayload(series, point, event))
+}
+
+function handleItemKeydown(seriesIndex, pointIndex, event) {
+  if (!props.onItemClick || !['Enter', ' '].includes(event.key)) return
+
+  event.preventDefault()
+  handleItemClick(seriesIndex, pointIndex, event)
+}
+
 function scheduleWidthUpdate(width) {
   if (typeof requestAnimationFrame === 'undefined') {
     updateWidth(width)
@@ -309,10 +331,14 @@ onBeforeUnmount(() => {
               v-for="point in series.points.filter(Boolean)"
               :key="point.index"
               class="cw-viz-line__point-group"
+              :class="{ 'cw-viz-line__point-group--clickable': onItemClick }"
               :transform="`translate(${point.x} ${point.y})`"
               :data-point-index="point.index"
-              :tabindex="showTooltip ? 0 : undefined"
+              :tabindex="showTooltip || onItemClick ? 0 : undefined"
+              :role="onItemClick ? 'button' : undefined"
               :aria-label="`${series.label}, ${point.category.label}: ${point.formattedValue}`"
+              @click="handleItemClick(series.index, point.index, $event)"
+              @keydown="handleItemKeydown(series.index, point.index, $event)"
               @pointerenter="openTooltip(series.index, point.index, $event)"
               @pointerleave="closeTooltip"
               @focus="openTooltip(series.index, point.index, $event)"
@@ -506,8 +532,14 @@ onBeforeUnmount(() => {
   transition: transform 120ms ease;
 }
 
+.cw-viz-line__point-group--clickable {
+  cursor: pointer;
+}
+
 .cw-viz-line__point-group:hover .cw-viz-line__point,
-.cw-viz-line__point-group:hover .cw-viz-line__point-background {
+.cw-viz-line__point-group:hover .cw-viz-line__point-background,
+.cw-viz-line__point-group:focus .cw-viz-line__point,
+.cw-viz-line__point-group:focus .cw-viz-line__point-background {
   transform: scale(1.2);
 }
 

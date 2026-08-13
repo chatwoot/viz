@@ -84,6 +84,24 @@ Set `timeseries` when categories represent ordered dates or time periods. The ch
 - Use `barRadius`, `barGap`, and `maxBarWidth` to tune bar geometry.
 - Set `showTooltip` to `false` to disable the rich HTML tooltip.
 
+## Item clicks
+
+Pass an `onItemClick` callback, or use Vue's `@item-click` syntax. Mouse clicks, Enter, and Space all invoke it.
+
+```vue
+<script setup>
+function openConversationReport({ item, category, series, value }) {
+  // item, category, and series are the original objects from data.
+}
+</script>
+
+<template>
+  <BarChart :data="data" @item-click="openConversationReport" />
+</template>
+```
+
+The callback receives `item`, `category`, `series`, `value`, `formattedValue`, their indexes and labels, and the native `event`.
+
 <details>
 <summary>Custom data accessors</summary>
 

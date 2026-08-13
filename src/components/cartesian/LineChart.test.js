@@ -135,6 +135,34 @@ describe('LineChart', () => {
     expect(point.attributes('tabindex')).toBeUndefined()
   })
 
+  it('calls onItemClick with the original item and chart context', async () => {
+    const onItemClick = vi.fn()
+    const wrapper = mount(LineChart, {
+      props: { data, onItemClick, showTooltip: false },
+    })
+    const point = wrapper.get('[data-series-id="resolved"]').findAll('.cw-viz-line__point-group')[2]
+
+    expect(point.attributes('role')).toBe('button')
+    expect(point.attributes('tabindex')).toBe('0')
+    await point.trigger('click')
+
+    expect(onItemClick).toHaveBeenCalledOnce()
+    expect(onItemClick.mock.calls[0][0]).toMatchObject({
+      category: 'Jun 15 - 21',
+      categoryIndex: 2,
+      categoryLabel: 'Jun 15 - 21',
+      formattedValue: '23',
+      item: 23,
+      pointIndex: 2,
+      series: data.series[1],
+      seriesId: 'resolved',
+      seriesIndex: 1,
+      seriesLabel: 'Resolved',
+      value: 23,
+    })
+    expect(onItemClick.mock.calls[0][0].event).toBeInstanceOf(MouseEvent)
+  })
+
   it('recalculates its inferred axis when the data range changes', async () => {
     const wrapper = mount(LineChart, { props: { data, width: 720 } })
 

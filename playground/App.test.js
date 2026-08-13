@@ -107,7 +107,7 @@ describe('playground', () => {
     expect(wrapper.get('.docs-panel pre').classes()).toContain('shiki')
     expect(wrapper.get('.docs-panel pre code').text()).toContain('import { LineChart }')
     expect(wrapper.findAll('.docs-panel details')).toHaveLength(1)
-    expect(wrapper.findAll('.docs-panel pre')).toHaveLength(4)
+    expect(wrapper.findAll('.docs-panel pre')).toHaveLength(5)
 
     await wrapper.get('a[href="/sankey"]').trigger('click')
 
