@@ -138,6 +138,7 @@ Scale options use `yTicks`, then `yStepSize`, then automatic ticks based on
 `yTickCount`. A step rounds inferred domain bounds outward while an explicit
 `yDomain` remains unchanged. Prefer an inferred domain. Add `yDomain`, `yTicks`,
 or `yStepSize` only when the product requires an exact, comparable scale.
+Zero-only data uses a non-negative `0` to `1` inferred fallback domain.
 
 ## Heatmaps
 

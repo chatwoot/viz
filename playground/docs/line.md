@@ -89,6 +89,9 @@ Use `yStepSize` to set a positive interval between inferred y-axis ticks. It acc
 
 For an inferred domain, the chart rounds the minimum down and maximum up to the resolved step. An explicit `yDomain` remains unchanged. Scale options use this precedence: `yTicks`, then `yStepSize`, then automatic ticks based on `yTickCount` (default `5`).
 
+When every value is zero, the inferred axis uses a positive `0` to `1` fallback instead of
+adding a negative range. Pass `yDomain` when a different empty-state scale is required.
+
 ## Item clicks
 
 Pass an `onItemClick` callback, or use Vue's `@item-click` syntax. Mouse clicks, Enter, and Space all invoke it.

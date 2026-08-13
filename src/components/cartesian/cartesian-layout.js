@@ -113,6 +113,8 @@ function createDomainDetails(values, requestedDomain, includeZero) {
   let minimum = validValues.length ? Math.min(...validValues) : 0
   let maximum = validValues.length ? Math.max(...validValues) : 1
 
+  if (minimum === 0 && maximum === 0) maximum = 1
+
   if (includeZero) {
     minimum = Math.min(minimum, 0)
     maximum = Math.max(maximum, 0)

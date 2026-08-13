@@ -19,6 +19,38 @@ describe('cartesian layout', () => {
     expect(layout.mapY(10)).toBe(layout.plot.bottom)
   })
 
+  it('uses a positive fallback domain when every value is zero', () => {
+    const layout = createCartesianLayout({
+      categoryCount: 7,
+      height: 360,
+      values: Array(7).fill(0),
+      width: 720,
+    })
+
+    expect(layout.domain).toEqual([0, 1])
+    expect(layout.yTicks.map((tick) => tick.value)).toEqual([0, 0.2, 0.4, 0.6, 0.8, 1])
+    expect(layout.mapY(0)).toBe(layout.plot.bottom)
+  })
+
+  it('preserves negative inferred and explicit domains', () => {
+    const inferred = createCartesianLayout({
+      categoryCount: 2,
+      height: 300,
+      values: [-10, 0],
+      width: 600,
+    })
+    const explicit = createCartesianLayout({
+      categoryCount: 1,
+      height: 300,
+      values: [0],
+      width: 600,
+      yDomain: [-1, 1],
+    })
+
+    expect(inferred.domain[0]).toBeLessThan(0)
+    expect(explicit.domain).toEqual([-1, 1])
+  })
+
   it('supports explicit domains and ticks', () => {
     const layout = createCartesianLayout({
       categoryCount: 2,

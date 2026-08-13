@@ -121,6 +121,26 @@ describe('LineChart', () => {
     ])
   })
 
+  it('keeps the inferred y-axis non-negative when every value is zero', () => {
+    const wrapper = mount(LineChart, {
+      props: {
+        data: {
+          categories: ['07-Aug', '08-Aug', '09-Aug', '10-Aug', '11-Aug', '12-Aug', '13-Aug'],
+          series: [{ id: 'conversations', data: Array(7).fill(0) }],
+        },
+      },
+    })
+
+    expect(wrapper.findAll('.cw-viz-line__y-tick').map((tick) => tick.text())).toEqual([
+      '0',
+      '0.2',
+      '0.4',
+      '0.6',
+      '0.8',
+      '1',
+    ])
+  })
+
   it('renders a rich HTML tooltip with every series for the hovered category', async () => {
     const wrapper = mount(LineChart, { props: { data, width: 720 } })
     const resolvedPoint = wrapper
