@@ -156,7 +156,7 @@ export function createBarLayout({
   })
   const maximumBarWidth = Math.max(finiteNumber(maxBarWidth, 48), 1)
   const requestedGap = Math.max(finiteNumber(barGap, 6), 0)
-  const radius = Math.max(finiteNumber(barRadius, 6), 0)
+  const radius = Math.max(finiteNumber(barRadius, 4), 0)
   const stackIndexes = outerStackIndexes(valueMatrix, categories.length)
   const stackOffsets = categories.map(() => ({ negative: 0, positive: 0 }))
 

@@ -25,6 +25,7 @@ describe('BarChart', () => {
     expect(wrapper.findAll('.cw-viz-bar__bar')).toHaveLength(6)
     expect(wrapper.findAll('.cw-viz-bar__x-tick')).toHaveLength(3)
     expect(wrapper.findAll('.cw-viz-bar__value')).toHaveLength(6)
+    expect(wrapper.props('barRadius')).toBe(4)
     expect(wrapper.get('.cw-viz-bar__bar').attributes('d')).toContain('Q')
 
     const first = wrapper.get('[data-series-id="handled"] .cw-viz-bar__bar-group')

@@ -130,7 +130,7 @@ Useful props:
 | `yStepSize`                          | Bar, Line  | Positive tick interval or function receiving `{ min, max, values, tickCount }`       |
 | `yTickCount`                         | Bar, Line  | Preferred inferred tick count; defaults to `5`                                       |
 | `height`                             | Bar, Line  | SVG view-box height; defaults to `360`                                               |
-| `barGap`, `barRadius`, `maxBarWidth` | Bar        | Tune grouped/stacked bar geometry                                                    |
+| `barGap`, `barRadius`, `maxBarWidth` | Bar        | Tune grouped/stacked bar geometry; `barRadius` defaults to `4`                       |
 | `pointRadius`, `xInset`              | Line       | Tune markers and horizontal plot inset                                               |
 
 Scale options use `yTicks`, then `yStepSize`, then automatic ticks based on

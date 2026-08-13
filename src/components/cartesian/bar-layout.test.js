@@ -25,7 +25,7 @@ function layout(options = {}) {
   return createBarLayout({
     ...accessors,
     barGap: 6,
-    barRadius: 6,
+    barRadius: 4,
     data,
     height: 320,
     maxBarWidth: 48,

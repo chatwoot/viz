@@ -93,7 +93,7 @@ Set `timeseries` when categories represent ordered dates or time periods. The ch
 
 - `formatValue` applies to tooltips, optional bar labels, and y-axis ticks.
 - Set `showValues` to display values on the bars.
-- Use `barRadius`, `barGap`, and `maxBarWidth` to tune bar geometry.
+- Use `barRadius` (default `4`), `barGap`, and `maxBarWidth` to tune bar geometry.
 - Set `showTooltip` to `false` to disable the rich HTML tooltip.
 
 ## Item clicks

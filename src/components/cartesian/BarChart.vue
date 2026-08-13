@@ -17,7 +17,7 @@ const props = defineProps({
   },
   barRadius: {
     type: Number,
-    default: 6,
+    default: 4,
   },
   categoryLabel: {
     type: Function,
