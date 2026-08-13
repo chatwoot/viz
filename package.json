@@ -1,6 +1,6 @@
 {
   "name": "@chatwoot/viz",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Tiny Vue chart components for Chatwoot",
   "license": "MIT",
   "style": "./dist/chatwoot-viz.css",
