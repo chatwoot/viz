@@ -88,6 +88,28 @@ Node and link colors accept raw CSS colors or custom properties such as `var(--h
 - Use `formatValue` to customize displayed counts.
 - Use `nodeWidth` and `nodePadding` to tune the layout.
 
+## Item clicks
+
+Nodes, their labels, and link ribbons use one `onItemClick` callback. The ribbons include a wider transparent hit target so thin flows remain easy to select. Mouse clicks, Enter, and Space all invoke the callback.
+
+```vue
+<script setup>
+function openFlowDetails(payload) {
+  if (payload.itemType === 'node') {
+    // payload.item is the original node object.
+  } else {
+    // payload.item is the original link object.
+  }
+}
+</script>
+
+<template>
+  <SankeyChart :data="data" @item-click="openFlowDetails" />
+</template>
+```
+
+Every payload contains `itemType`, `item`, `value`, `formattedValue`, `index`, and the native `event`. Node payloads add `id` and `label`; link payloads add the original `source` and `target` nodes plus their ids and labels.
+
 <details>
 <summary>Custom field names</summary>
 

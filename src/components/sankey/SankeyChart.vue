@@ -54,6 +54,10 @@ const props = defineProps({
     type: Number,
     default: 10,
   },
+  onItemClick: {
+    type: Function,
+    default: undefined,
+  },
   showLabelBackground: {
     type: Boolean,
     default: true,
@@ -90,6 +94,48 @@ const description = computed(() => {
   if (layout.value.error) return layout.value.error
   return `${layout.value.nodes.length} nodes connected by ${layout.value.links.length} flows.`
 })
+
+function itemClickPayload(itemType, item, event) {
+  if (itemType === 'node') {
+    return {
+      event,
+      formattedValue: String(props.formatValue(item.displayValue, item.datum)),
+      id: item.id,
+      index: item.index,
+      item: item.datum,
+      itemType,
+      label: item.label,
+      value: item.displayValue,
+    }
+  }
+
+  return {
+    event,
+    formattedValue: String(props.formatValue(item.value, item.datum)),
+    index: item.index,
+    item: item.datum,
+    itemType,
+    source: item.source.datum,
+    sourceId: item.source.id,
+    sourceLabel: item.source.label,
+    target: item.target.datum,
+    targetId: item.target.id,
+    targetLabel: item.target.label,
+    value: item.value,
+  }
+}
+
+function handleItemClick(itemType, item, event) {
+  if (!props.onItemClick) return
+  props.onItemClick(itemClickPayload(itemType, item, event))
+}
+
+function handleItemKeydown(itemType, item, event) {
+  if (!props.onItemClick || !['Enter', ' '].includes(event.key)) return
+
+  event.preventDefault()
+  handleItemClick(itemType, item, event)
+}
 
 function updateWidth(width) {
   if (Number.isFinite(width) && width > 0) measuredWidth.value = width
@@ -149,20 +195,30 @@ onBeforeUnmount(() => {
 
       <g v-else>
         <g class="cw-viz-sankey__links" data-viz-layer="links">
-          <path
+          <g
             v-for="link in layout.links"
             :key="link.index"
-            class="cw-viz-sankey__link"
-            :d="link.path"
-            :fill="link.color"
-            :data-source="link.source.id"
-            :data-target="link.target.id"
+            class="cw-viz-sankey__link-group"
+            :class="{ 'cw-viz-sankey__link-group--clickable': onItemClick }"
+            :tabindex="onItemClick ? 0 : undefined"
+            :role="onItemClick ? 'button' : undefined"
+            :aria-label="`${link.source.label} to ${link.target.label}: ${formatValue(link.value, link.datum)}`"
+            @click="handleItemClick('link', link, $event)"
+            @keydown="handleItemKeydown('link', link, $event)"
           >
+            <path
+              class="cw-viz-sankey__link"
+              :d="link.path"
+              :fill="link.color"
+              :data-source="link.source.id"
+              :data-target="link.target.id"
+            />
+            <path class="cw-viz-sankey__link-hit-area" :d="link.path" aria-hidden="true" />
             <title>
               {{ link.source.label }} to {{ link.target.label }}:
               {{ formatValue(link.value, link.datum) }}
             </title>
-          </path>
+          </g>
         </g>
 
         <g class="cw-viz-sankey__nodes" data-viz-layer="nodes">
@@ -170,7 +226,13 @@ onBeforeUnmount(() => {
             v-for="node in layout.nodes"
             :key="node.id"
             class="cw-viz-sankey__node-group"
+            :class="{ 'cw-viz-sankey__node-group--clickable': onItemClick }"
             :data-node-id="node.id"
+            :tabindex="onItemClick ? 0 : undefined"
+            :role="onItemClick ? 'button' : undefined"
+            :aria-label="`${node.label}: ${formatValue(node.displayValue, node.datum)}`"
+            @click="handleItemClick('node', node, $event)"
+            @keydown="handleItemKeydown('node', node, $event)"
           >
             <rect
               class="cw-viz-sankey__node"
@@ -248,15 +310,36 @@ onBeforeUnmount(() => {
 
 .cw-viz-sankey__link {
   opacity: var(--cw-viz-sankey-link-opacity, 0.2);
+  pointer-events: none;
   transition: opacity 150ms ease;
 }
 
-.cw-viz-sankey__link:hover {
+.cw-viz-sankey__link-hit-area {
+  fill: transparent;
+  stroke: transparent;
+  stroke-width: var(--cw-viz-sankey-link-hit-width, 12px);
+  pointer-events: all;
+  vector-effect: non-scaling-stroke;
+}
+
+.cw-viz-sankey__link-group--clickable,
+.cw-viz-sankey__node-group--clickable {
+  cursor: pointer;
+}
+
+.cw-viz-sankey__link-group:hover .cw-viz-sankey__link,
+.cw-viz-sankey__link-group:focus .cw-viz-sankey__link {
   opacity: var(--cw-viz-sankey-link-hover-opacity, 0.34);
 }
 
 .cw-viz-sankey__node {
   opacity: var(--cw-viz-sankey-node-opacity, 1);
+}
+
+.cw-viz-sankey__node-group:focus .cw-viz-sankey__node {
+  stroke: var(--cw-viz-sankey-focus-color, #3e63dd);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
 }
 
 .cw-viz-sankey__label-background {

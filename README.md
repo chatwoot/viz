@@ -384,6 +384,23 @@ The accessors can be replaced when an application uses different field names:
 />
 ```
 
+Nodes, their labels, and link ribbons support the same unified click API. Thin ribbons receive a
+wider transparent hit target, and every item supports Enter and Space keyboard activation.
+
+```vue
+<SankeyChart
+  :data="data"
+  @item-click="
+    ({ itemType, item, source, target, value }) =>
+      openFlowDetails(itemType, item, source, target, value)
+  "
+/>
+```
+
+Every payload includes `itemType`, the original `item`, `value`, `formattedValue`, `index`, and the
+native `event`. Node payloads add `id` and `label`; link payloads add the original `source` and
+`target` nodes plus their ids and labels.
+
 ### Sankey props
 
 | Prop                  | Default                                 | Purpose                                                     |
@@ -401,6 +418,7 @@ The accessors can be replaced when an application uses different field names:
 | `linkColor`           | `link => link.color`                    | Link color or accessor; falls back to the target node color |
 | `formatValue`         | locale number formatting                | Label value formatter                                       |
 | `showLabelBackground` | `true`                                  | Draw label backgrounds; non-terminal labels include borders |
+| `onItemClick`         | —                                       | Callback invoked when a node or link is activated           |
 | `ariaLabel`           | `Sankey diagram`                        | Accessible chart name                                       |
 
 The chart observes its own container and recalculates horizontal positions as
@@ -414,7 +432,9 @@ the available width changes. No sizing utility is required.
   --cw-viz-sankey-node-resolved-color: #038574;
   --cw-viz-sankey-link-opacity: 0.2;
   --cw-viz-sankey-link-hover-opacity: 0.34;
+  --cw-viz-sankey-link-hit-width: 12px;
   --cw-viz-sankey-node-opacity: 1;
+  --cw-viz-sankey-focus-color: #3e63dd;
   --cw-viz-sankey-label-color: #60646c;
   --cw-viz-sankey-label-value-color: #1c2024;
   --cw-viz-sankey-label-background: #fcfcfd;

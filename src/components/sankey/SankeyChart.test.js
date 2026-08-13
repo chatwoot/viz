@@ -118,6 +118,57 @@ describe('SankeyChart', () => {
     )
   })
 
+  it('calls onItemClick for nodes and their labels', async () => {
+    const onItemClick = vi.fn()
+    const wrapper = mount(SankeyChart, { props: { data, onItemClick } })
+    const captain = wrapper.get('[data-node-id="captain"]')
+
+    expect(captain.attributes('role')).toBe('button')
+    expect(captain.attributes('tabindex')).toBe('0')
+    await captain.get('.cw-viz-sankey__label').trigger('click')
+
+    expect(onItemClick).toHaveBeenCalledOnce()
+    expect(onItemClick.mock.calls[0][0]).toMatchObject({
+      formattedValue: '3',
+      id: 'captain',
+      index: 1,
+      item: data.nodes[1],
+      itemType: 'node',
+      label: 'Resolved by Captain',
+      value: 3,
+    })
+    expect(onItemClick.mock.calls[0][0].event).toBeInstanceOf(MouseEvent)
+  })
+
+  it('calls onItemClick for link ribbons with a wider hit target', async () => {
+    const onItemClick = vi.fn()
+    const wrapper = mount(SankeyChart, { props: { data, onItemClick } })
+    const link = wrapper.findAll('.cw-viz-sankey__link-group')[2]
+
+    expect(link.attributes('role')).toBe('button')
+    expect(link.attributes('tabindex')).toBe('0')
+    expect(link.get('.cw-viz-sankey__link-hit-area').exists()).toBe(true)
+    await link.get('.cw-viz-sankey__link-hit-area').trigger('click')
+    await link.trigger('keydown', { key: ' ' })
+
+    expect(onItemClick).toHaveBeenCalledTimes(2)
+    expect(onItemClick.mock.calls[0][0]).toMatchObject({
+      formattedValue: '3',
+      index: 2,
+      item: data.links[2],
+      itemType: 'link',
+      source: data.nodes[1],
+      sourceId: 'captain',
+      sourceLabel: 'Resolved by Captain',
+      target: data.nodes[3],
+      targetId: 'closed',
+      targetLabel: 'Stayed closed',
+      value: 3,
+    })
+    expect(onItemClick.mock.calls[0][0].event).toBeInstanceOf(MouseEvent)
+    expect(onItemClick.mock.calls[1][0].event).toBeInstanceOf(KeyboardEvent)
+  })
+
   it('recalculates the layout when its container resizes', async () => {
     let observer
     const disconnect = vi.fn()
