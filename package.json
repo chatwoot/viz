@@ -3,6 +3,18 @@
   "version": "0.1.0",
   "description": "Tiny Vue chart components for Chatwoot",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chatwoot/viz.git"
+  },
+  "homepage": "https://github.com/chatwoot/viz#readme",
+  "bugs": {
+    "url": "https://github.com/chatwoot/viz/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "style": "./dist/chatwoot-viz.css",
   "files": [
     "dist"
