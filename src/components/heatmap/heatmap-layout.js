@@ -30,6 +30,10 @@ function colorLevel(value, domain, levelCount) {
   return Math.min(Math.floor(ratio * levelCount), levelCount - 1)
 }
 
+function normalizeLevelCount(levelCount) {
+  return Math.max(Math.floor(finiteNumber(levelCount) ?? 5), 1)
+}
+
 function numericCellValue(value) {
   return value === null || value === undefined ? undefined : finiteNumber(value)
 }
@@ -42,6 +46,7 @@ export function createHeatmapLayout({
   data,
   domain,
   formatValue,
+  levelCount,
   rowDescription,
   rowId,
   rowLabel,
@@ -49,7 +54,7 @@ export function createHeatmapLayout({
 }) {
   const sourceColumns = Array.isArray(data?.columns) ? data.columns : []
   const sourceRows = Array.isArray(data?.rows) ? data.rows : []
-  const levelCount = 5
+  const normalizedLevelCount = normalizeLevelCount(levelCount)
 
   const columns = sourceColumns.map((column, index) => ({
     datum: column,
@@ -119,7 +124,7 @@ export function createHeatmapLayout({
 
   for (const row of rows) {
     for (const cell of row.cells) {
-      cell.level = colorLevel(cell.value, normalizedDomain, levelCount)
+      cell.level = colorLevel(cell.value, normalizedDomain, normalizedLevelCount)
     }
   }
 
@@ -128,7 +133,7 @@ export function createHeatmapLayout({
     domain: normalizedDomain,
     error:
       !columns.length || !rows.length ? 'Heatmap data requires at least one column and row.' : '',
-    levelCount,
+    levelCount: normalizedLevelCount,
     rows,
   }
 }

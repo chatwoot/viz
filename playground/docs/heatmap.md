@@ -64,10 +64,10 @@ The component renders `label` and `description` exactly as supplied. Date parsin
 
 ## Scale and formatting
 
-The color domain is inferred from all numeric cells. Pass `domain` when several heatmaps must share an exact scale. `formatValue` supports the same suffix, `{value}` template, or function API as the Cartesian charts.
+The color domain is inferred from all numeric cells. Pass `domain` when several heatmaps must share an exact scale. The `levelCount` prop controls the number of quantized color levels and defaults to `5`. `formatValue` supports the same suffix, `{value}` template, or function API as the Cartesian charts.
 
 ```vue
-<HeatmapChart :data="data" :domain="[0, 100]" format-value="{value}%" />
+<HeatmapChart :data="data" :domain="[0, 100]" :level-count="7" format-value="{value}%" />
 ```
 
 ## Display options
@@ -86,6 +86,8 @@ The color domain is inferred from all numeric cells. Pass `domain` when several 
   --cw-viz-heatmap-level-4-color: #1c73dc;
 }
 ```
+
+When `levelCount` differs from `5`, fallback colors are interpolated between the lightest and darkest defaults. Override any level with `--cw-viz-heatmap-level-{n}-color`.
 
 ## Item clicks
 

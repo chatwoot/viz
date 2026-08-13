@@ -52,6 +52,19 @@ describe('createHeatmapLayout', () => {
     })
   })
 
+  it('supports a configurable number of quantization levels', () => {
+    const layout = createHeatmapLayout({ ...options, levelCount: 3 })
+
+    expect(layout.levelCount).toBe(3)
+    expect(layout.rows[0].cells.map((cell) => cell.level)).toEqual([0, 1, 2])
+    expect(layout.rows[1].cells.map((cell) => cell.level)).toEqual([0, undefined, 2])
+  })
+
+  it('normalizes the level count to a positive integer', () => {
+    expect(createHeatmapLayout({ ...options, levelCount: 2.8 }).levelCount).toBe(2)
+    expect(createHeatmapLayout({ ...options, levelCount: 0 }).levelCount).toBe(1)
+  })
+
   it('reports incomplete matrix data', () => {
     expect(createHeatmapLayout({ ...options, data: { columns: [], rows: [] } }).error).toContain(
       'at least one column and row',

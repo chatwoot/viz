@@ -5,6 +5,8 @@ import { createHeatmapLayout } from './heatmap-layout.js'
 
 defineOptions({ name: 'HeatmapChart' })
 
+const DEFAULT_LEVEL_COLORS = ['#f8f8fa', '#e2efff', '#bdd9fb', '#8ab6f0', '#1c73dc']
+
 const props = defineProps({
   ariaLabel: {
     type: String,
@@ -50,6 +52,10 @@ const props = defineProps({
     type: Number,
     default: 4,
   },
+  levelCount: {
+    type: Number,
+    default: 5,
+  },
   onItemClick: {
     type: Function,
     default: undefined,
@@ -92,6 +98,7 @@ const layout = computed(() =>
     data: props.data,
     domain: props.domain,
     formatValue: props.formatValue,
+    levelCount: props.levelCount,
     rowDescription: props.rowDescription,
     rowId: props.rowId,
     rowLabel: props.rowLabel,
@@ -160,6 +167,21 @@ function closeTooltip() {
   activeCell.value = null
 }
 
+function defaultLevelColor(level) {
+  if (layout.value.levelCount === DEFAULT_LEVEL_COLORS.length) return DEFAULT_LEVEL_COLORS[level]
+  if (layout.value.levelCount === 1) return DEFAULT_LEVEL_COLORS.at(-1)
+
+  const startWeight = ((layout.value.levelCount - level - 1) / (layout.value.levelCount - 1)) * 100
+  return `color-mix(in srgb, ${DEFAULT_LEVEL_COLORS[0]} ${startWeight}%, ${DEFAULT_LEVEL_COLORS.at(-1)})`
+}
+
+function cellStyle(cell) {
+  if (cell.color) return { backgroundColor: cell.color }
+
+  const variable = `--cw-viz-heatmap-level-${cell.level}-color`
+  return { backgroundColor: `var(${variable}, ${defaultLevelColor(cell.level)})` }
+}
+
 function selectCell(row, cell, event) {
   if (!props.onItemClick) return
 
@@ -203,7 +225,7 @@ function selectCell(row, cell, event) {
               :type="showTooltip || onItemClick ? 'button' : undefined"
               class="cw-viz-heatmap__cell"
               :class="`cw-viz-heatmap__cell--level-${cell.level}`"
-              :style="cell.color ? { backgroundColor: cell.color } : undefined"
+              :style="cellStyle(cell)"
               role="gridcell"
               :aria-label="`${row.label}, ${cell.column.label}: ${cell.formattedValue}`"
               @pointerenter="openTooltip(row.index, cell.column.index, $event)"

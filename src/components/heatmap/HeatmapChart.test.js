@@ -90,6 +90,22 @@ describe('HeatmapChart', () => {
     )
   })
 
+  it('renders a configurable number of quantization levels', () => {
+    const wrapper = mount(HeatmapChart, {
+      props: {
+        data: { columns: [0, 1, 2], rows: [{ id: 'monday', data: [0, 5, 10] }] },
+        levelCount: 3,
+      },
+    })
+    const cells = wrapper.findAll('.cw-viz-heatmap__cell')
+
+    expect(cells[0].classes()).toContain('cw-viz-heatmap__cell--level-0')
+    expect(cells[1].classes()).toContain('cw-viz-heatmap__cell--level-1')
+    expect(cells[2].classes()).toContain('cw-viz-heatmap__cell--level-2')
+    expect(cells[1].attributes('style')).toContain('--cw-viz-heatmap-level-1-color')
+    expect(cells[1].attributes('style')).toContain('color-mix')
+  })
+
   it('can disable tooltip interaction', () => {
     const wrapper = mount(HeatmapChart, { props: { data, showTooltip: false } })
 
