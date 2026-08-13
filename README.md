@@ -37,6 +37,15 @@ const data = {
 - [LineChart](./playground/docs/line.md)
 - [SankeyChart](./playground/docs/sankey.md)
 
+## Agent skill
+
+Install the [`chatwoot-viz` skill](./skills/chatwoot-viz/SKILL.md) to teach a
+compatible coding agent how to choose, configure, theme, and test these charts:
+
+```sh
+npx skills add chatwoot/viz --skill chatwoot-viz
+```
+
 ## Playground
 
 ```sh
