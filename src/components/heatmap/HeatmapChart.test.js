@@ -93,8 +93,8 @@ describe('HeatmapChart', () => {
   it('renders a configurable number of quantization levels', () => {
     const wrapper = mount(HeatmapChart, {
       props: {
+        colors: ['#111111', 'var(--heatmap-middle, #777777)', '#eeeeee'],
         data: { columns: [0, 1, 2], rows: [{ id: 'monday', data: [0, 5, 10] }] },
-        levelCount: 3,
       },
     })
     const cells = wrapper.findAll('.cw-viz-heatmap__cell')
@@ -102,8 +102,22 @@ describe('HeatmapChart', () => {
     expect(cells[0].classes()).toContain('cw-viz-heatmap__cell--level-0')
     expect(cells[1].classes()).toContain('cw-viz-heatmap__cell--level-1')
     expect(cells[2].classes()).toContain('cw-viz-heatmap__cell--level-2')
-    expect(cells[1].attributes('style')).toContain('--cw-viz-heatmap-level-1-color')
-    expect(cells[1].attributes('style')).toContain('color-mix')
+    expect(cells[0].attributes('style')).toContain('rgb(17, 17, 17)')
+    expect(cells[1].attributes('style')).toContain('var(--heatmap-middle, #777777)')
+    expect(cells[2].attributes('style')).toContain('rgb(238, 238, 238)')
+  })
+
+  it('uses the default palette when colors is empty', () => {
+    const wrapper = mount(HeatmapChart, {
+      props: {
+        colors: [],
+        data: { columns: [0, 1], rows: [{ id: 'monday', data: [0, 10] }] },
+      },
+    })
+
+    expect(wrapper.findAll('.cw-viz-heatmap__cell')[1].attributes('style')).toContain(
+      '--cw-viz-heatmap-level-4-color',
+    )
   })
 
   it('can disable tooltip interaction', () => {

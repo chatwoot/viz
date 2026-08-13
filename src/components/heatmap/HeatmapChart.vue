@@ -5,7 +5,13 @@ import { createHeatmapLayout } from './heatmap-layout.js'
 
 defineOptions({ name: 'HeatmapChart' })
 
-const DEFAULT_LEVEL_COLORS = ['#f8f8fa', '#e2efff', '#bdd9fb', '#8ab6f0', '#1c73dc']
+const DEFAULT_LEVEL_COLORS = [
+  'var(--cw-viz-heatmap-level-0-color, #f8f8fa)',
+  'var(--cw-viz-heatmap-level-1-color, #e2efff)',
+  'var(--cw-viz-heatmap-level-2-color, #bdd9fb)',
+  'var(--cw-viz-heatmap-level-3-color, #8ab6f0)',
+  'var(--cw-viz-heatmap-level-4-color, #1c73dc)',
+]
 
 const props = defineProps({
   ariaLabel: {
@@ -36,6 +42,10 @@ const props = defineProps({
     type: Function,
     default: (column) => column?.label ?? column,
   },
+  colors: {
+    type: Array,
+    default: undefined,
+  },
   data: {
     type: Object,
     required: true,
@@ -51,10 +61,6 @@ const props = defineProps({
   gap: {
     type: Number,
     default: 4,
-  },
-  levelCount: {
-    type: Number,
-    default: 5,
   },
   onItemClick: {
     type: Function,
@@ -88,6 +94,12 @@ const props = defineProps({
 
 const chartRoot = useTemplateRef('chart-root')
 const activeCell = ref(null)
+const palette = computed(() => {
+  const colors = Array.isArray(props.colors)
+    ? props.colors.filter((color) => typeof color === 'string' && color.trim())
+    : []
+  return colors.length ? colors : DEFAULT_LEVEL_COLORS
+})
 
 const layout = computed(() =>
   createHeatmapLayout({
@@ -98,7 +110,7 @@ const layout = computed(() =>
     data: props.data,
     domain: props.domain,
     formatValue: props.formatValue,
-    levelCount: props.levelCount,
+    levelCount: palette.value.length,
     rowDescription: props.rowDescription,
     rowId: props.rowId,
     rowLabel: props.rowLabel,
@@ -167,19 +179,9 @@ function closeTooltip() {
   activeCell.value = null
 }
 
-function defaultLevelColor(level) {
-  if (layout.value.levelCount === DEFAULT_LEVEL_COLORS.length) return DEFAULT_LEVEL_COLORS[level]
-  if (layout.value.levelCount === 1) return DEFAULT_LEVEL_COLORS.at(-1)
-
-  const startWeight = ((layout.value.levelCount - level - 1) / (layout.value.levelCount - 1)) * 100
-  return `color-mix(in srgb, ${DEFAULT_LEVEL_COLORS[0]} ${startWeight}%, ${DEFAULT_LEVEL_COLORS.at(-1)})`
-}
-
 function cellStyle(cell) {
   if (cell.color) return { backgroundColor: cell.color }
-
-  const variable = `--cw-viz-heatmap-level-${cell.level}-color`
-  return { backgroundColor: `var(${variable}, ${defaultLevelColor(cell.level)})` }
+  return { backgroundColor: palette.value[cell.level] }
 }
 
 function selectCell(row, cell, event) {

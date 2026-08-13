@@ -181,8 +181,9 @@ Heatmap rules:
 - `null`, missing, and non-numeric cells render as empty, non-interactive cells.
 - The color domain is inferred across numeric cells. Pass `domain` when several
   heatmaps must use the same scale.
-- `levelCount` controls the number of quantized color levels and defaults to `5`.
-  Non-default counts interpolate fallback colors between the palette endpoints.
+- `colors` supplies the quantized palette, and its length determines the number
+  of levels. It defaults to five CSS-variable-aware colors. Cell colors take
+  precedence over the shared palette.
 - `cellHeight` (`32`), `cellMinWidth` (`28`), `gap` (`4`), and
   `rowLabelWidth` (`120`) control density. The matrix scrolls horizontally when
   it cannot fit its container.
