@@ -464,9 +464,19 @@ onBeforeUnmount(() => {
   cursor: pointer;
 }
 
+.cw-viz-bar__bar-group:focus {
+  outline: none;
+}
+
 .cw-viz-bar__bar-group:hover .cw-viz-bar__bar,
 .cw-viz-bar__bar-group:focus .cw-viz-bar__bar {
   opacity: 0.82;
+}
+
+.cw-viz-bar__bar-group:focus-visible .cw-viz-bar__bar {
+  stroke: var(--cw-viz-bar-focus-color, rgb(62 99 221 / 45%));
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
 }
 
 .cw-viz-bar__value {

@@ -560,11 +560,20 @@ onBeforeUnmount(() => {
   cursor: pointer;
 }
 
+.cw-viz-line__point-group:focus {
+  outline: none;
+}
+
 .cw-viz-line__point-group:hover .cw-viz-line__point,
 .cw-viz-line__point-group:hover .cw-viz-line__point-background,
 .cw-viz-line__point-group:focus .cw-viz-line__point,
 .cw-viz-line__point-group:focus .cw-viz-line__point-background {
   transform: scale(1.2);
+}
+
+.cw-viz-line__point-group:focus-visible .cw-viz-line__point-background {
+  stroke: var(--cw-viz-line-focus-color, rgb(62 99 221 / 45%));
+  stroke-width: 1px;
 }
 
 .cw-viz-line__value {

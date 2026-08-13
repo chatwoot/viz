@@ -361,12 +361,20 @@ button.cw-viz-heatmap__cell {
   cursor: pointer;
 }
 
-.cw-viz-heatmap__cell:hover,
+.cw-viz-heatmap__cell:hover {
+  z-index: 1;
+  filter: brightness(0.96);
+}
+
+.cw-viz-heatmap__cell:focus {
+  outline: none;
+}
+
 .cw-viz-heatmap__cell:focus-visible {
   z-index: 1;
   filter: brightness(0.96);
-  outline: 2px solid var(--cw-viz-heatmap-focus-color, #3e63dd);
-  outline-offset: -2px;
+  outline: 1px solid var(--cw-viz-heatmap-focus-color, rgb(96 100 108 / 45%));
+  outline-offset: -1px;
 }
 
 .cw-viz-heatmap__cell--level-0,

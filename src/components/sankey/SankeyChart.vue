@@ -327,8 +327,13 @@ onBeforeUnmount(() => {
   cursor: pointer;
 }
 
+.cw-viz-sankey__link-group:focus,
+.cw-viz-sankey__node-group:focus {
+  outline: none;
+}
+
 .cw-viz-sankey__link-group:hover .cw-viz-sankey__link,
-.cw-viz-sankey__link-group:focus .cw-viz-sankey__link {
+.cw-viz-sankey__link-group:focus-visible .cw-viz-sankey__link {
   opacity: var(--cw-viz-sankey-link-hover-opacity, 0.34);
 }
 
@@ -336,9 +341,9 @@ onBeforeUnmount(() => {
   opacity: var(--cw-viz-sankey-node-opacity, 1);
 }
 
-.cw-viz-sankey__node-group:focus .cw-viz-sankey__node {
-  stroke: var(--cw-viz-sankey-focus-color, #3e63dd);
-  stroke-width: 2;
+.cw-viz-sankey__node-group:focus-visible .cw-viz-sankey__node {
+  stroke: var(--cw-viz-sankey-focus-color, rgb(62 99 221 / 45%));
+  stroke-width: 1;
   vector-effect: non-scaling-stroke;
 }
 
