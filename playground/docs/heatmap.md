@@ -64,7 +64,7 @@ The component renders `label` and `description` exactly as supplied. Date parsin
 
 ## Scale and formatting
 
-The color domain is inferred from all numeric cells. Pass `domain` when several heatmaps must share an exact scale. The `colors` prop supplies the quantized palette, and its length determines the number of levels. It defaults to five colors. `formatValue` supports the same suffix, `{value}` template, or function API as the Cartesian charts.
+The color domain is inferred from all numeric cells. Pass `domain` when several heatmaps must share an exact linear scale. The `colors` prop supplies the palette, and its length determines the number of levels. It defaults to five colors. `formatValue` supports the same suffix, `{value}` template, or function API as the Cartesian charts.
 
 ```vue
 <HeatmapChart
@@ -74,6 +74,19 @@ The color domain is inferred from all numeric cells. Pass `domain` when several 
   format-value="{value}%"
 />
 ```
+
+Pass percentile cut points through `quantiles` when the values are skewed and equal-width linear levels hide useful variation. Quantile coloring takes precedence over the linear `domain` scale. The component sorts all numeric cells once and uses interpolated sample quantiles. Each cut point creates a bucket boundary, so provide one more color than quantiles to give every bucket a distinct color. Invalid cut points outside `0` to `1` are ignored; the remaining values are deduplicated and sorted.
+
+```vue
+<HeatmapChart
+  :data="data"
+  :quantiles="[0.2, 0.4, 0.6, 0.8, 0.9, 0.99]"
+  :colors="heatmapColors"
+  zero-color="var(--color-surface-subtle)"
+/>
+```
+
+`zeroColor` gives numeric zero an exact color without using a percentile as a proxy. Do not add `0` to `quantiles` to create a zero bucket: the zeroth quantile represents the sample minimum, which is not necessarily zero. When `zeroColor` is set, zero values are excluded from the quantile calculation so they cannot collapse the non-zero buckets. Cell-level `color` values and the `cellColor` accessor still take precedence. If the palette has fewer colors than the generated buckets, overflow buckets use its last color.
 
 ## Display options
 

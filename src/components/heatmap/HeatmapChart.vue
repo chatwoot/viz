@@ -66,6 +66,10 @@ const props = defineProps({
     type: Function,
     default: undefined,
   },
+  quantiles: {
+    type: Array,
+    default: undefined,
+  },
   rowDescription: {
     type: Function,
     default: (row) => row?.description ?? row?.sublabel ?? '',
@@ -90,6 +94,10 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  zeroColor: {
+    type: String,
+    default: undefined,
+  },
 })
 
 const chartRoot = useTemplateRef('chart-root')
@@ -100,6 +108,9 @@ const palette = computed(() => {
     : []
   return colors.length ? colors : DEFAULT_LEVEL_COLORS
 })
+const zeroColor = computed(() => {
+  return typeof props.zeroColor === 'string' && props.zeroColor.trim() ? props.zeroColor : undefined
+})
 
 const layout = computed(() =>
   createHeatmapLayout({
@@ -109,8 +120,10 @@ const layout = computed(() =>
     columnLabel: props.columnLabel,
     data: props.data,
     domain: props.domain,
+    excludeZeroFromQuantiles: zeroColor.value !== undefined,
     formatValue: props.formatValue,
     levelCount: palette.value.length,
+    quantiles: props.quantiles,
     rowDescription: props.rowDescription,
     rowId: props.rowId,
     rowLabel: props.rowLabel,
@@ -181,6 +194,7 @@ function closeTooltip() {
 
 function cellStyle(cell) {
   if (cell.color) return { backgroundColor: cell.color }
+  if (cell.value === 0 && zeroColor.value) return { backgroundColor: zeroColor.value }
   return { backgroundColor: palette.value[cell.level] }
 }
 

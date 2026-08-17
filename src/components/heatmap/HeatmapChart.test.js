@@ -120,6 +120,48 @@ describe('HeatmapChart', () => {
     )
   })
 
+  it('colors cells using quantile buckets', () => {
+    const wrapper = mount(HeatmapChart, {
+      props: {
+        colors: ['#111111', '#777777', '#eeeeee'],
+        data: {
+          columns: [0, 1, 2, 3, 4],
+          rows: [{ id: 'monday', data: [1, 2, 3, 4, 100] }],
+        },
+        quantiles: [0.5, 0.75],
+      },
+    })
+    const cells = wrapper.findAll('.cw-viz-heatmap__cell')
+
+    expect(cells.map((cell) => cell.classes().find((name) => name.includes('--level-')))).toEqual([
+      'cw-viz-heatmap__cell--level-0',
+      'cw-viz-heatmap__cell--level-0',
+      'cw-viz-heatmap__cell--level-0',
+      'cw-viz-heatmap__cell--level-1',
+      'cw-viz-heatmap__cell--level-2',
+    ])
+  })
+
+  it('uses a distinct zero color and excludes zero from quantile thresholds', () => {
+    const wrapper = mount(HeatmapChart, {
+      props: {
+        colors: ['#111111', '#777777'],
+        data: {
+          columns: [0, 1, 2, 3],
+          rows: [{ id: 'monday', data: [{ value: 0, color: '#ffffff' }, 0, 10, 20] }],
+        },
+        quantiles: [0.5],
+        zeroColor: 'var(--heatmap-zero, #eeeeee)',
+      },
+    })
+    const cells = wrapper.findAll('.cw-viz-heatmap__cell')
+
+    expect(cells[0].attributes('style')).toContain('rgb(255, 255, 255)')
+    expect(cells[1].attributes('style')).toContain('var(--heatmap-zero, #eeeeee)')
+    expect(cells[2].classes()).toContain('cw-viz-heatmap__cell--level-0')
+    expect(cells[3].classes()).toContain('cw-viz-heatmap__cell--level-1')
+  })
+
   it('can disable tooltip interaction', () => {
     const wrapper = mount(HeatmapChart, { props: { data, showTooltip: false } })
 

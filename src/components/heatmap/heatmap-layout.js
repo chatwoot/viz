@@ -20,8 +20,41 @@ function normalizeDomain(minimum, maximum, requestedDomain) {
   return [minimum, maximum]
 }
 
-function colorLevel(value, domain, levelCount) {
+function normalizeQuantiles(quantiles) {
+  if (!Array.isArray(quantiles)) return []
+
+  return [
+    ...new Set(quantiles.map(finiteNumber).filter((value) => value >= 0 && value <= 1)),
+  ].toSorted((a, b) => a - b)
+}
+
+function quantileForSorted(sorted, quantile) {
+  const position = (sorted.length - 1) * quantile
+  const lowerIndex = Math.floor(position)
+  const interpolation = position - lowerIndex
+  const lowerValue = sorted[lowerIndex]
+  const upperValue = sorted[lowerIndex + 1]
+
+  return upperValue === undefined
+    ? lowerValue
+    : lowerValue + interpolation * (upperValue - lowerValue)
+}
+
+function createQuantileThresholds(values, quantiles) {
+  if (!values.length || !quantiles.length) return []
+
+  const sorted = values.toSorted((a, b) => a - b)
+  return quantiles.map((quantile) => quantileForSorted(sorted, quantile))
+}
+
+function colorLevel(value, domain, levelCount, quantileThresholds) {
   if (value === undefined) return undefined
+
+  if (quantileThresholds.length) {
+    const thresholdIndex = quantileThresholds.findIndex((threshold) => value <= threshold)
+    const level = thresholdIndex === -1 ? quantileThresholds.length : thresholdIndex
+    return Math.min(level, levelCount - 1)
+  }
 
   const [minimum, maximum] = domain
   if (minimum === maximum) return levelCount - 1
@@ -45,8 +78,10 @@ export function createHeatmapLayout({
   columnLabel,
   data,
   domain,
+  excludeZeroFromQuantiles = false,
   formatValue,
   levelCount,
+  quantiles,
   rowDescription,
   rowId,
   rowLabel,
@@ -55,6 +90,7 @@ export function createHeatmapLayout({
   const sourceColumns = Array.isArray(data?.columns) ? data.columns : []
   const sourceRows = Array.isArray(data?.rows) ? data.rows : []
   const normalizedLevelCount = normalizeLevelCount(levelCount)
+  const normalizedQuantiles = normalizeQuantiles(quantiles)
 
   const columns = sourceColumns.map((column, index) => ({
     datum: column,
@@ -82,6 +118,7 @@ export function createHeatmapLayout({
 
   let minimum
   let maximum
+  const numericValues = []
   const rows = normalizedRows.map((row) => {
     row.cells = columns.map((column) => {
       const datum = row.values[column.index]
@@ -105,6 +142,9 @@ export function createHeatmapLayout({
       if (value !== undefined) {
         minimum = minimum === undefined ? value : Math.min(minimum, value)
         maximum = maximum === undefined ? value : Math.max(maximum, value)
+        if (normalizedQuantiles.length && (!excludeZeroFromQuantiles || value !== 0)) {
+          numericValues.push(value)
+        }
       }
 
       return {
@@ -121,10 +161,16 @@ export function createHeatmapLayout({
     return row
   })
   const normalizedDomain = normalizeDomain(minimum, maximum, domain)
+  const quantileThresholds = createQuantileThresholds(numericValues, normalizedQuantiles)
 
   for (const row of rows) {
     for (const cell of row.cells) {
-      cell.level = colorLevel(cell.value, normalizedDomain, normalizedLevelCount)
+      cell.level = colorLevel(
+        cell.value,
+        normalizedDomain,
+        normalizedLevelCount,
+        quantileThresholds,
+      )
     }
   }
 
@@ -134,6 +180,8 @@ export function createHeatmapLayout({
     error:
       !columns.length || !rows.length ? 'Heatmap data requires at least one column and row.' : '',
     levelCount: normalizedLevelCount,
+    quantileThresholds,
+    quantiles: normalizedQuantiles,
     rows,
   }
 }
