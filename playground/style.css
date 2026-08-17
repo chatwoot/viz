@@ -86,6 +86,7 @@ textarea:focus-visible {
 
 .brand {
   font-size: 0.8125rem;
+  text-decoration: none;
 }
 
 .brand strong {

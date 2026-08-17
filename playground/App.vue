@@ -32,17 +32,18 @@ const DEFAULT_DOCS_WIDTH = 560
 const MIN_DOCS_WIDTH = 360
 const MAX_DOCS_WIDTH = 720
 const primaryPages = [
-  { id: 'home', label: 'Home', path: '/' },
-  { id: 'sankey', label: 'Sankey', path: '/sankey' },
   { id: 'line', label: 'Line', path: '/line' },
   { id: 'bar', label: 'Bar', path: '/bar' },
-  { id: 'heatmap', label: 'Heatmap', path: '/heatmap' },
 ]
 const aggregatePages = [
   { id: 'percentage', label: 'Percentage', path: '/percentage' },
   { id: 'donut', label: 'Donut', path: '/donut' },
 ]
-const pages = [...primaryPages, ...aggregatePages]
+const trailingPages = [
+  { id: 'sankey', label: 'Sankey', path: '/sankey' },
+  { id: 'heatmap', label: 'Heatmap', path: '/heatmap' },
+]
+const pages = [...primaryPages, ...aggregatePages, ...trailingPages]
 const defaultData = {
   bar: DEFAULT_BAR_DATA,
   donut: DEFAULT_DONUT_DATA,
@@ -326,9 +327,14 @@ watch(source, scheduleHighlight)
 <template>
   <main class="playground">
     <header class="playground__header">
-      <div class="brand">
+      <a
+        class="brand"
+        href="/"
+        :aria-current="activePage === 'home' ? 'page' : undefined"
+        @click.prevent="navigateTo('home')"
+      >
         <strong>chatwoot/viz</strong>
-      </div>
+      </a>
       <nav class="story-nav" aria-label="Chart stories">
         <a
           v-for="page in primaryPages"
@@ -345,6 +351,17 @@ watch(source, scheduleHighlight)
           <a
             v-for="page in aggregatePages"
             :key="page.id"
+            class="story-nav__link"
+            :class="{ 'story-nav__link--active': activePage === page.id }"
+            :href="page.path"
+            :aria-current="activePage === page.id ? 'page' : undefined"
+            @click.prevent="navigateTo(page.id)"
+          >
+            {{ page.label }}
+          </a>
+        </div>
+        <div v-for="page in trailingPages" :key="page.id" class="story-nav__group">
+          <a
             class="story-nav__link"
             :class="{ 'story-nav__link--active': activePage === page.id }"
             :href="page.path"

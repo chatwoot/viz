@@ -124,9 +124,23 @@ describe('playground', () => {
 
     const wrapper = mount(App)
 
-    expect(wrapper.get('.story-nav__group').attributes('aria-label')).toBe('Aggregate charts')
-    expect(wrapper.get('.story-nav__group').text()).toContain('Percentage')
-    expect(wrapper.get('.story-nav__group').text()).toContain('Donut')
+    expect(wrapper.findAll('.story-nav__link').map((link) => link.text())).toEqual([
+      'Line',
+      'Bar',
+      'Percentage',
+      'Donut',
+      'Sankey',
+      'Heatmap',
+    ])
+    expect(wrapper.get('.brand').text()).toBe('chatwoot/viz')
+    expect(wrapper.get('.brand').attributes('href')).toBe('/')
+    expect(wrapper.get('.brand').attributes('aria-current')).toBeUndefined()
+    expect(wrapper.findAll('.story-nav__group').map((group) => group.text())).toEqual([
+      'PercentageDonut',
+      'Sankey',
+      'Heatmap',
+    ])
+    expect(wrapper.get('[aria-label="Aggregate charts"]').text()).toBe('PercentageDonut')
     expect(wrapper.findComponent({ name: 'DonutChartDemo' }).exists()).toBe(true)
     expect(wrapper.findComponent({ name: 'DonutChart' }).exists()).toBe(true)
     expect(wrapper.get('a[href="/donut"]').attributes('aria-current')).toBe('page')
@@ -368,7 +382,7 @@ describe('playground', () => {
     expect(wrapper.findComponent({ name: 'BarChart' }).props('data')).toEqual(savedBar)
     expect(wrapper.findComponent({ name: 'HeatmapChart' }).props('data')).toEqual(savedHeatmap)
     expect(wrapper.find('.editor-panel').exists()).toBe(false)
-    expect(wrapper.get('a[href="/"]').attributes('aria-current')).toBe('page')
+    expect(wrapper.get('.brand').attributes('aria-current')).toBe('page')
   })
 
   it('falls back to default chart data when a saved home draft is invalid', () => {
