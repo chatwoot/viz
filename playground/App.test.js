@@ -185,6 +185,8 @@ describe('playground', () => {
 
     expect(toggle.attributes('aria-expanded')).toBe('true')
     expect(wrapper.get('.docs-toolbar .panel-title').text()).toBe('Line Chart')
+    expect(wrapper.get('.docs-content').find('.markdown-body').exists()).toBe(true)
+    expect(wrapper.get('.docs-content').classes()).not.toContain('markdown-body')
     expect(wrapper.get('.docs-panel pre').classes()).toContain('shiki')
     expect(wrapper.get('.docs-panel pre code').text()).toContain('import { LineChart }')
     expect(wrapper.findAll('.docs-panel details')).toHaveLength(1)
@@ -212,18 +214,31 @@ describe('playground', () => {
     await wrapper.get('.docs-toggle').trigger('click')
     const handle = wrapper.get('.docs-resize-handle')
 
+    expect(wrapper.get('.workspace').attributes('style')).toContain('--docs-panel-width: 560px')
+    expect(handle.attributes('aria-valuemin')).toBe('360')
+    expect(handle.attributes('aria-valuemax')).toBe('720')
+
     handle.element.dispatchEvent(
       new MouseEvent('pointerdown', { bubbles: true, button: 0, clientX: 900 }),
     )
-    window.dispatchEvent(new MouseEvent('pointermove', { clientX: 850 }))
+    window.dispatchEvent(new MouseEvent('pointermove', { clientX: 700 }))
     await wrapper.vm.$nextTick()
 
-    expect(wrapper.get('.workspace').attributes('style')).toContain('--docs-panel-width: 410px')
-    expect(handle.attributes('aria-valuenow')).toBe('410')
+    expect(wrapper.get('.workspace').attributes('style')).toContain('--docs-panel-width: 720px')
+    expect(handle.attributes('aria-valuenow')).toBe('720')
 
     await handle.trigger('keydown', { key: 'ArrowRight' })
 
-    expect(wrapper.get('.workspace').attributes('style')).toContain('--docs-panel-width: 390px')
+    expect(wrapper.get('.workspace').attributes('style')).toContain('--docs-panel-width: 700px')
+    window.dispatchEvent(new MouseEvent('pointerup'))
+
+    handle.element.dispatchEvent(
+      new MouseEvent('pointerdown', { bubbles: true, button: 0, clientX: 900 }),
+    )
+    window.dispatchEvent(new MouseEvent('pointermove', { clientX: 1_500 }))
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.get('.workspace').attributes('style')).toContain('--docs-panel-width: 360px')
     window.dispatchEvent(new MouseEvent('pointerup'))
   })
 

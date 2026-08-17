@@ -28,9 +28,9 @@ import {
 const SHIKI_CDN_URL = 'https://esm.sh/shiki@4.4.3'
 const DEFAULT_CANVAS_HEIGHT = 380
 const MIN_CANVAS_HEIGHT = 260
-const DEFAULT_DOCS_WIDTH = 360
-const MIN_DOCS_WIDTH = 260
-const MAX_DOCS_WIDTH = 560
+const DEFAULT_DOCS_WIDTH = 560
+const MIN_DOCS_WIDTH = 360
+const MAX_DOCS_WIDTH = 720
 const primaryPages = [
   { id: 'home', label: 'Home', path: '/' },
   { id: 'sankey', label: 'Sankey', path: '/sankey' },
@@ -551,7 +551,7 @@ watch(source, scheduleHighlight)
             {{ docsCopied ? 'Copied' : 'Copy' }}
           </button>
         </header>
-        <article class="markdown-body">
+        <article class="docs-content">
           <component :is="activeDocs.component" />
         </article>
       </aside>

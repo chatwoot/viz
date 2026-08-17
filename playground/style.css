@@ -257,15 +257,19 @@ textarea:focus-visible {
   outline: 0;
 }
 
-.markdown-body {
+.docs-content {
+  min-width: 0;
   min-height: 0;
   flex: 1;
   padding: 0.75rem;
   overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.markdown-body {
   color: #3b3d45;
   font-size: 0.8125rem;
   line-height: 1.6;
-  overscroll-behavior: contain;
 }
 
 .markdown-body > :first-child {
