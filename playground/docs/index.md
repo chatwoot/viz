@@ -4,12 +4,13 @@
 
 ## Charts
 
-| Component      | Use it for                        | Guide                       |
-| -------------- | --------------------------------- | --------------------------- |
-| `BarChart`     | Grouped or stacked comparisons    | [Bar chart](./bar.md)       |
-| `HeatmapChart` | Row-and-column matrices           | [Heatmap](./heatmap.md)     |
-| `LineChart`    | Multi-series trends               | [Line chart](./line.md)     |
-| `SankeyChart`  | Flows between stages and outcomes | [Sankey chart](./sankey.md) |
+| Component         | Use it for                        | Guide                               |
+| ----------------- | --------------------------------- | ----------------------------------- |
+| `BarChart`        | Grouped or stacked comparisons    | [Bar chart](./bar.md)               |
+| `HeatmapChart`    | Row-and-column matrices           | [Heatmap](./heatmap.md)             |
+| `LineChart`       | Multi-series trends               | [Line chart](./line.md)             |
+| `PercentageChart` | Compact part-to-whole breakdowns  | [Percentage chart](./percentage.md) |
+| `SankeyChart`     | Flows between stages and outcomes | [Sankey chart](./sankey.md)         |
 
 Each chart guide documents its data shape, Vue API, formatting, interactions, and customization options.
 
@@ -28,7 +29,7 @@ import '@chatwoot/viz/style.css'
 Components are exported individually from the package entry point:
 
 ```js
-import { BarChart, HeatmapChart, LineChart, SankeyChart } from '@chatwoot/viz'
+import { BarChart, HeatmapChart, LineChart, PercentageChart, SankeyChart } from '@chatwoot/viz'
 ```
 
 Vue is a peer dependency. The library ships as modern ESM so a consuming application can tree-shake unused component exports.
@@ -41,6 +42,7 @@ Every chart accepts `formatValue`. Pass a suffix, a `{value}` template, or a fun
 <LineChart :data="data" format-value="%" />
 <BarChart :data="data" format-value="{value} conversations" />
 <HeatmapChart :data="data" :format-value="(value) => `${value}%`" />
+<PercentageChart :data="data" format-value=" GB" />
 ```
 
 ## Item clicks
@@ -56,6 +58,7 @@ Payloads reflect each chart's data model. See the chart-specific interaction sec
 - [Bar chart interactions](./bar.md#item-clicks)
 - [Heatmap interactions](./heatmap.md#item-clicks)
 - [Line chart interactions](./line.md#item-clicks)
+- [Percentage chart interactions](./percentage.md#item-clicks)
 - [Sankey interactions](./sankey.md#item-clicks)
 
 ## Theming
@@ -69,7 +72,7 @@ pnpm install
 pnpm dev
 ```
 
-The Vite playground provides a gallery at `/` and editable stories at `/bar`, `/heatmap`, `/line`, and `/sankey`. Each story includes editable JSON, saved drafts, a resizable canvas, and its chart documentation.
+The Vite playground provides a gallery at `/` and editable stories at `/bar`, `/heatmap`, `/line`, `/percentage`, and `/sankey`. Each story includes editable JSON, saved drafts, a resizable canvas, and its chart documentation.
 
 ## Development
 

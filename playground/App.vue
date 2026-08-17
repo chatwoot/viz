@@ -8,12 +8,16 @@ import HeatmapDocs from './docs/heatmap.md'
 import heatmapDocsSource from './docs/heatmap.md?raw'
 import LineDocs from './docs/line.md'
 import lineDocsSource from './docs/line.md?raw'
+import PercentageChartDemo from './PercentageChartDemo.vue'
+import PercentageDocs from './docs/percentage.md'
+import percentageDocsSource from './docs/percentage.md?raw'
 import SankeyDocs from './docs/sankey.md'
 import sankeyDocsSource from './docs/sankey.md?raw'
 import {
   DEFAULT_BAR_DATA,
   DEFAULT_HEATMAP_DATA,
   DEFAULT_LINE_DATA,
+  DEFAULT_PERCENTAGE_DATA,
   DEFAULT_SANKEY_DATA,
 } from './sample-data.js'
 
@@ -29,17 +33,24 @@ const pages = [
   { id: 'line', label: 'Line', path: '/line' },
   { id: 'bar', label: 'Bar', path: '/bar' },
   { id: 'heatmap', label: 'Heatmap', path: '/heatmap' },
+  { id: 'percentage', label: 'Percentage', path: '/percentage' },
 ]
 const defaultData = {
   bar: DEFAULT_BAR_DATA,
   heatmap: DEFAULT_HEATMAP_DATA,
   line: DEFAULT_LINE_DATA,
+  percentage: DEFAULT_PERCENTAGE_DATA,
   sankey: DEFAULT_SANKEY_DATA,
 }
 const docs = {
   bar: { component: BarDocs, source: barDocsSource, title: 'Bar Chart' },
   heatmap: { component: HeatmapDocs, source: heatmapDocsSource, title: 'Heatmap Chart' },
   line: { component: LineDocs, source: lineDocsSource, title: 'Line Chart' },
+  percentage: {
+    component: PercentageDocs,
+    source: percentageDocsSource,
+    title: 'Percentage Chart',
+  },
   sankey: { component: SankeyDocs, source: sankeyDocsSource, title: 'Sankey Chart' },
 }
 
@@ -80,6 +91,7 @@ const drafts = ref({
   bar: savedSource('bar'),
   heatmap: savedSource('heatmap'),
   line: savedSource('line'),
+  percentage: savedSource('percentage'),
   sankey: savedSource('sankey'),
 })
 const source = ref(activePage.value === 'home' ? drafts.value.line : drafts.value[activePage.value])
@@ -110,6 +122,7 @@ const homeData = computed(() => ({
   bar: parseSource(drafts.value.bar, DEFAULT_BAR_DATA),
   heatmap: parseSource(drafts.value.heatmap, DEFAULT_HEATMAP_DATA),
   line: parseSource(drafts.value.line, DEFAULT_LINE_DATA),
+  percentage: parseSource(drafts.value.percentage, DEFAULT_PERCENTAGE_DATA),
   sankey: parseSource(drafts.value.sankey, DEFAULT_SANKEY_DATA),
 }))
 const activeDocs = computed(() => docs[activePage.value])
@@ -129,6 +142,8 @@ watch(activePage, (page, previousPage) => {
 
   if (page !== 'home') source.value = drafts.value[page]
   else docsOpen.value = false
+
+  if (!docs[page]) docsOpen.value = false
 
   const path = pathForPage(page)
   if (window.location.pathname !== path) window.history.pushState({}, '', path)
@@ -316,7 +331,7 @@ watch(source, scheduleHighlight)
         </a>
       </nav>
       <button
-        v-if="activePage !== 'home'"
+        v-if="activePage !== 'home' && activeDocs"
         type="button"
         class="button--quiet button--small docs-toggle"
         aria-controls="chart-docs"
@@ -353,6 +368,11 @@ watch(source, scheduleHighlight)
       <section class="home-chart" aria-labelledby="home-heatmap-title">
         <h2 id="home-heatmap-title">Heatmap</h2>
         <HeatmapChart :data="homeData.heatmap" aria-label="Hourly activity by day" />
+      </section>
+
+      <section class="home-chart" aria-labelledby="home-percentage-title">
+        <h2 id="home-percentage-title">Percentage</h2>
+        <PercentageChartDemo :data="homeData.percentage" />
       </section>
     </section>
 
@@ -439,8 +459,12 @@ watch(source, scheduleHighlight)
 
         <div class="canvas-stage">
           <div ref="canvas-frame" class="canvas-frame">
+            <PercentageChartDemo
+              v-if="result.data && activePage === 'percentage'"
+              :data="result.data"
+            />
             <LineChart
-              v-if="result.data && activePage === 'line'"
+              v-else-if="result.data && activePage === 'line'"
               :data="result.data"
               :height="canvasHeight"
               aria-label="Conversation trends by week"

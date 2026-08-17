@@ -37,6 +37,61 @@ const lineData = {
   ],
 }
 
+const percentageData = {
+  examples: [
+    {
+      id: 'credit-usage',
+      title: 'Credit usage',
+      segments: [
+        {
+          id: 'assistant',
+          label: 'Assistant',
+          value: 40,
+          color: '#4747c2',
+        },
+        {
+          id: 'tasks',
+          label: 'Tasks',
+          value: 30,
+          color: '#ab4aba',
+        },
+        {
+          id: 'copilot',
+          label: 'Copilot',
+          value: 30,
+          color: '#009688',
+        },
+      ],
+    },
+    {
+      id: 'storage',
+      title: 'Storage',
+      total: 500,
+      unit: 'GB',
+      segments: [
+        {
+          id: 'documents',
+          label: 'Documents',
+          value: 100,
+          color: '#e5484d',
+        },
+        {
+          id: 'music',
+          label: 'Music',
+          value: 30,
+          color: '#f5a623',
+        },
+        {
+          id: 'apps',
+          label: 'Apps',
+          value: 120,
+          color: '#2f80ed',
+        },
+      ],
+    },
+  ],
+}
+
 const barData = {
   stacked: false,
   timeseries: true,
@@ -238,4 +293,5 @@ const sankeyData = {
 export const DEFAULT_BAR_DATA = JSON.stringify(barData, null, 2)
 export const DEFAULT_HEATMAP_DATA = JSON.stringify(heatmapData, null, 2)
 export const DEFAULT_LINE_DATA = JSON.stringify(lineData, null, 2)
+export const DEFAULT_PERCENTAGE_DATA = JSON.stringify(percentageData, null, 2)
 export const DEFAULT_SANKEY_DATA = JSON.stringify(sankeyData, null, 2)

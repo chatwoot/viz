@@ -2,7 +2,12 @@ import { mount } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import App from './App.vue'
-import { DEFAULT_BAR_DATA, DEFAULT_HEATMAP_DATA, DEFAULT_SANKEY_DATA } from './sample-data.js'
+import {
+  DEFAULT_BAR_DATA,
+  DEFAULT_HEATMAP_DATA,
+  DEFAULT_PERCENTAGE_DATA,
+  DEFAULT_SANKEY_DATA,
+} from './sample-data.js'
 
 describe('playground', () => {
   beforeEach(() => {
@@ -68,6 +73,43 @@ describe('playground', () => {
     expect(wrapper.get('textarea').element.value).toBe(DEFAULT_HEATMAP_DATA)
     expect(wrapper.get('.cw-viz-heatmap__row-label').text()).toContain('Thursday')
     expect(wrapper.get('.cw-viz-heatmap__row-label').text()).toContain('Aug 6, 2026')
+  })
+
+  it('calculates complete allocation and fixed-capacity percentage examples', async () => {
+    window.history.replaceState({}, '', '/percentage')
+
+    const wrapper = mount(App)
+
+    expect(wrapper.findComponent({ name: 'PercentageChartDemo' }).exists()).toBe(true)
+    expect(wrapper.findAllComponents({ name: 'PercentageChart' })).toHaveLength(2)
+    expect(wrapper.get('a[href="/percentage"]').attributes('aria-current')).toBe('page')
+    expect(wrapper.get('textarea').element.value).toBe(DEFAULT_PERCENTAGE_DATA)
+    expect(JSON.parse(wrapper.get('textarea').element.value).examples[1].segments[0]).toMatchObject(
+      { label: 'Documents', value: 100 },
+    )
+    expect(wrapper.findAll('.cw-viz-percentage__segment')).toHaveLength(7)
+    expect(wrapper.get('.cw-viz-percentage__segment--remainder').attributes('style')).toContain(
+      '--cw-viz-percentage-segment-size: 50',
+    )
+    expect(wrapper.text()).toContain('100% allocated')
+    expect(wrapper.text()).toContain('250 GB of 500 GB used')
+
+    const segments = wrapper.findAll('.cw-viz-percentage__segment')
+    const firstSegment = segments[0]
+    await firstSegment.trigger('pointerenter')
+
+    expect(wrapper.get('[role="tooltip"]').text()).toContain('Assistant')
+    expect(wrapper.get('[role="tooltip"]').text()).toContain('40%')
+
+    await firstSegment.trigger('pointerleave')
+    expect(wrapper.find('[role="tooltip"]').exists()).toBe(false)
+
+    await firstSegment.trigger('focus')
+    expect(wrapper.get('[role="tooltip"]').text()).toContain('Assistant')
+
+    await firstSegment.trigger('blur')
+    await segments[3].trigger('pointerenter')
+    expect(wrapper.get('[role="tooltip"]').text()).toContain('100 GB · 20%')
   })
 
   it('controls stacked and time-series bar options from the preview toolbar', async () => {
@@ -231,6 +273,16 @@ describe('playground', () => {
   it('renders all saved charts on the home page', () => {
     const savedBar = { categories: ['Saved'], series: [{ id: 'saved', data: [18] }] }
     const savedLine = { categories: ['Saved'], series: [{ id: 'saved', data: [42] }] }
+    const savedPercentage = {
+      examples: [
+        {
+          id: 'saved',
+          title: 'Saved percentage',
+          summary: 'Saved summary',
+          segments: [],
+        },
+      ],
+    }
     const savedSankey = { nodes: [{ id: 'saved', count: 1 }], links: [] }
     const savedHeatmap = {
       columns: ['Saved hour'],
@@ -239,17 +291,22 @@ describe('playground', () => {
     localStorage.setItem('chatwoot-viz:bar-data', JSON.stringify(savedBar))
     localStorage.setItem('chatwoot-viz:heatmap-data', JSON.stringify(savedHeatmap))
     localStorage.setItem('chatwoot-viz:line-data', JSON.stringify(savedLine))
+    localStorage.setItem('chatwoot-viz:percentage-data', JSON.stringify(savedPercentage))
     localStorage.setItem('chatwoot-viz:sankey-data', JSON.stringify(savedSankey))
     window.history.replaceState({}, '', '/')
 
     const wrapper = mount(App)
 
-    expect(wrapper.findAll('.home-chart h2').map((heading) => heading.text())).toEqual([
+    expect(wrapper.findAll('.home-chart > h2').map((heading) => heading.text())).toEqual([
       'Sankey',
       'Line',
       'Bar',
       'Heatmap',
+      'Percentage',
     ])
+    expect(wrapper.findComponent({ name: 'PercentageChartDemo' }).props('data')).toEqual(
+      savedPercentage,
+    )
     expect(wrapper.findComponent({ name: 'SankeyChart' }).props('data')).toEqual(savedSankey)
     expect(wrapper.findComponent({ name: 'LineChart' }).props('data')).toEqual(savedLine)
     expect(wrapper.findComponent({ name: 'BarChart' }).props('data')).toEqual(savedBar)
