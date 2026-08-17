@@ -94,8 +94,25 @@ textarea:focus-visible {
 
 .story-nav {
   display: flex;
+  min-width: 0;
+  flex: 1;
   align-items: center;
   gap: 0.25rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.story-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.story-nav__group {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: 0.25rem;
+  padding-left: 0.5rem;
+  border-left: 1px solid #e0e1e6;
 }
 
 .story-nav__link {
@@ -136,6 +153,26 @@ textarea:focus-visible {
   border: 1px solid #e0e1e6;
   border-radius: 6px;
   background: #ffffff;
+}
+
+.home-chart-group {
+  min-width: 0;
+  grid-column: 1 / -1;
+}
+
+.home-chart-group__title {
+  margin: 0 0 0.75rem;
+  color: #60646c;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.home-chart-group__grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .home-chart h2 {
@@ -593,6 +630,10 @@ textarea:focus-visible {
   }
 
   .home-page {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .home-chart-group__grid {
     grid-template-columns: minmax(0, 1fr);
   }
 

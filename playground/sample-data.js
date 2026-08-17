@@ -37,6 +37,48 @@ const lineData = {
   ],
 }
 
+const ratingSegments = [
+  {
+    id: 'excellent',
+    label: 'Excellent',
+    value: 62,
+    color: '#3ecf4c',
+    description: 'Based on 62 responses',
+  },
+  {
+    id: 'good',
+    label: 'Good',
+    value: 27,
+    color: '#6bd36e',
+    description: 'Based on 27 responses',
+  },
+  {
+    id: 'average',
+    label: 'Average',
+    value: 19,
+    color: '#ffed55',
+    description: 'Based on 19 responses',
+  },
+  {
+    id: 'fair',
+    label: 'Fair',
+    value: 9,
+    color: '#ffbf2f',
+    description: 'Based on 9 responses',
+  },
+  {
+    id: 'poor',
+    label: 'Poor',
+    value: 75,
+    color: '#ffad28',
+    description: 'Based on 75 responses',
+  },
+]
+
+const donutData = {
+  segments: ratingSegments,
+}
+
 const percentageData = {
   examples: [
     {
@@ -88,43 +130,7 @@ const percentageData = {
     },
     {
       id: 'rating-distribution',
-      segments: [
-        {
-          id: 'excellent',
-          label: 'Excellent',
-          value: 62,
-          color: '#3ecf4c',
-          description: 'Based on 62 responses',
-        },
-        {
-          id: 'good',
-          label: 'Good',
-          value: 27,
-          color: '#6bd36e',
-          description: 'Based on 27 responses',
-        },
-        {
-          id: 'average',
-          label: 'Average',
-          value: 19,
-          color: '#ffed55',
-          description: 'Based on 19 responses',
-        },
-        {
-          id: 'fair',
-          label: 'Fair',
-          value: 9,
-          color: '#ffbf2f',
-          description: 'Based on 9 responses',
-        },
-        {
-          id: 'poor',
-          label: 'Poor',
-          value: 75,
-          color: '#ffad28',
-          description: 'Based on 75 responses',
-        },
-      ],
+      segments: ratingSegments,
     },
   ],
 }
@@ -328,6 +334,7 @@ const sankeyData = {
 }
 
 export const DEFAULT_BAR_DATA = JSON.stringify(barData, null, 2)
+export const DEFAULT_DONUT_DATA = JSON.stringify(donutData, null, 2)
 export const DEFAULT_HEATMAP_DATA = JSON.stringify(heatmapData, null, 2)
 export const DEFAULT_LINE_DATA = JSON.stringify(lineData, null, 2)
 export const DEFAULT_PERCENTAGE_DATA = JSON.stringify(percentageData, null, 2)

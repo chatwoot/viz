@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App.vue'
 import {
   DEFAULT_BAR_DATA,
+  DEFAULT_DONUT_DATA,
   DEFAULT_HEATMAP_DATA,
   DEFAULT_PERCENTAGE_DATA,
   DEFAULT_SANKEY_DATA,
@@ -116,6 +117,27 @@ describe('playground', () => {
     expect(wrapper.text()).toContain('Rating distribution')
     expect(wrapper.text()).toContain('32.29%')
     expect(wrapper.text()).toContain('(62)')
+  })
+
+  it('groups aggregate charts and loads the donut story directly', async () => {
+    window.history.replaceState({}, '', '/donut')
+
+    const wrapper = mount(App)
+
+    expect(wrapper.get('.story-nav__group').attributes('aria-label')).toBe('Aggregate charts')
+    expect(wrapper.get('.story-nav__group').text()).toContain('Percentage')
+    expect(wrapper.get('.story-nav__group').text()).toContain('Donut')
+    expect(wrapper.findComponent({ name: 'DonutChartDemo' }).exists()).toBe(true)
+    expect(wrapper.findComponent({ name: 'DonutChart' }).exists()).toBe(true)
+    expect(wrapper.get('a[href="/donut"]').attributes('aria-current')).toBe('page')
+    expect(wrapper.get('textarea').element.value).toBe(DEFAULT_DONUT_DATA)
+    expect(wrapper.findAll('.cw-viz-donut__segment-group')).toHaveLength(5)
+    expect(wrapper.get('.donut-chart-demo__center').text()).toContain('192')
+    expect(wrapper.text()).toContain('32.29%')
+
+    await wrapper.findAll('.cw-viz-donut__segment-group')[0].trigger('pointerenter')
+    expect(wrapper.get('[role="tooltip"]').text()).toContain('62 · 32.29%')
+    expect(wrapper.get('[role="tooltip"]').text()).toContain('Based on 62 responses')
   })
 
   it('controls stacked and time-series bar options from the preview toolbar', async () => {
@@ -296,12 +318,16 @@ describe('playground', () => {
         },
       ],
     }
+    const savedDonut = {
+      segments: [{ id: 'saved', label: 'Saved rating', value: 1 }],
+    }
     const savedSankey = { nodes: [{ id: 'saved', count: 1 }], links: [] }
     const savedHeatmap = {
       columns: ['Saved hour'],
       rows: [{ id: 'saved', label: 'Saved day', data: [7] }],
     }
     localStorage.setItem('chatwoot-viz:bar-data', JSON.stringify(savedBar))
+    localStorage.setItem('chatwoot-viz:donut-data', JSON.stringify(savedDonut))
     localStorage.setItem('chatwoot-viz:heatmap-data', JSON.stringify(savedHeatmap))
     localStorage.setItem('chatwoot-viz:line-data', JSON.stringify(savedLine))
     localStorage.setItem('chatwoot-viz:percentage-data', JSON.stringify(savedPercentage))
@@ -316,11 +342,13 @@ describe('playground', () => {
       'Bar',
       'Heatmap',
       'Percentage',
+      'Donut',
     ])
     expect(wrapper.findComponent({ name: 'PercentageChartDemo' }).props('data')).toEqual(
       savedPercentage,
     )
     expect(wrapper.findComponent({ name: 'SankeyChart' }).props('data')).toEqual(savedSankey)
+    expect(wrapper.findComponent({ name: 'DonutChartDemo' }).props('data')).toEqual(savedDonut)
     expect(wrapper.findComponent({ name: 'LineChart' }).props('data')).toEqual(savedLine)
     expect(wrapper.findComponent({ name: 'BarChart' }).props('data')).toEqual(savedBar)
     expect(wrapper.findComponent({ name: 'HeatmapChart' }).props('data')).toEqual(savedHeatmap)

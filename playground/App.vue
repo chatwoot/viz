@@ -4,6 +4,9 @@ import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from
 import { BarChart, HeatmapChart, LineChart, SankeyChart } from '../src/index.js'
 import BarDocs from './docs/bar.md'
 import barDocsSource from './docs/bar.md?raw'
+import DonutChartDemo from './DonutChartDemo.vue'
+import DonutDocs from './docs/donut.md'
+import donutDocsSource from './docs/donut.md?raw'
 import HeatmapDocs from './docs/heatmap.md'
 import heatmapDocsSource from './docs/heatmap.md?raw'
 import LineDocs from './docs/line.md'
@@ -15,6 +18,7 @@ import SankeyDocs from './docs/sankey.md'
 import sankeyDocsSource from './docs/sankey.md?raw'
 import {
   DEFAULT_BAR_DATA,
+  DEFAULT_DONUT_DATA,
   DEFAULT_HEATMAP_DATA,
   DEFAULT_LINE_DATA,
   DEFAULT_PERCENTAGE_DATA,
@@ -27,16 +31,21 @@ const MIN_CANVAS_HEIGHT = 260
 const DEFAULT_DOCS_WIDTH = 360
 const MIN_DOCS_WIDTH = 260
 const MAX_DOCS_WIDTH = 560
-const pages = [
+const primaryPages = [
   { id: 'home', label: 'Home', path: '/' },
   { id: 'sankey', label: 'Sankey', path: '/sankey' },
   { id: 'line', label: 'Line', path: '/line' },
   { id: 'bar', label: 'Bar', path: '/bar' },
   { id: 'heatmap', label: 'Heatmap', path: '/heatmap' },
-  { id: 'percentage', label: 'Percentage', path: '/percentage' },
 ]
+const aggregatePages = [
+  { id: 'percentage', label: 'Percentage', path: '/percentage' },
+  { id: 'donut', label: 'Donut', path: '/donut' },
+]
+const pages = [...primaryPages, ...aggregatePages]
 const defaultData = {
   bar: DEFAULT_BAR_DATA,
+  donut: DEFAULT_DONUT_DATA,
   heatmap: DEFAULT_HEATMAP_DATA,
   line: DEFAULT_LINE_DATA,
   percentage: DEFAULT_PERCENTAGE_DATA,
@@ -44,6 +53,7 @@ const defaultData = {
 }
 const docs = {
   bar: { component: BarDocs, source: barDocsSource, title: 'Bar Chart' },
+  donut: { component: DonutDocs, source: donutDocsSource, title: 'Donut Chart' },
   heatmap: { component: HeatmapDocs, source: heatmapDocsSource, title: 'Heatmap Chart' },
   line: { component: LineDocs, source: lineDocsSource, title: 'Line Chart' },
   percentage: {
@@ -89,6 +99,7 @@ function pointDescription(point) {
 const activePage = ref(pageFromPath(window.location.pathname))
 const drafts = ref({
   bar: savedSource('bar'),
+  donut: savedSource('donut'),
   heatmap: savedSource('heatmap'),
   line: savedSource('line'),
   percentage: savedSource('percentage'),
@@ -120,6 +131,7 @@ const result = computed(() => {
 })
 const homeData = computed(() => ({
   bar: parseSource(drafts.value.bar, DEFAULT_BAR_DATA),
+  donut: parseSource(drafts.value.donut, DEFAULT_DONUT_DATA),
   heatmap: parseSource(drafts.value.heatmap, DEFAULT_HEATMAP_DATA),
   line: parseSource(drafts.value.line, DEFAULT_LINE_DATA),
   percentage: parseSource(drafts.value.percentage, DEFAULT_PERCENTAGE_DATA),
@@ -319,7 +331,7 @@ watch(source, scheduleHighlight)
       </div>
       <nav class="story-nav" aria-label="Chart stories">
         <a
-          v-for="page in pages"
+          v-for="page in primaryPages"
           :key="page.id"
           class="story-nav__link"
           :class="{ 'story-nav__link--active': activePage === page.id }"
@@ -329,6 +341,19 @@ watch(source, scheduleHighlight)
         >
           {{ page.label }}
         </a>
+        <div class="story-nav__group" role="group" aria-label="Aggregate charts">
+          <a
+            v-for="page in aggregatePages"
+            :key="page.id"
+            class="story-nav__link"
+            :class="{ 'story-nav__link--active': activePage === page.id }"
+            :href="page.path"
+            :aria-current="activePage === page.id ? 'page' : undefined"
+            @click.prevent="navigateTo(page.id)"
+          >
+            {{ page.label }}
+          </a>
+        </div>
       </nav>
       <button
         v-if="activePage !== 'home' && activeDocs"
@@ -370,9 +395,19 @@ watch(source, scheduleHighlight)
         <HeatmapChart :data="homeData.heatmap" aria-label="Hourly activity by day" />
       </section>
 
-      <section class="home-chart" aria-labelledby="home-percentage-title">
-        <h2 id="home-percentage-title">Percentage</h2>
-        <PercentageChartDemo :data="homeData.percentage" />
+      <section class="home-chart-group" aria-labelledby="home-aggregate-title">
+        <h2 id="home-aggregate-title" class="home-chart-group__title">Aggregate charts</h2>
+        <div class="home-chart-group__grid">
+          <section class="home-chart" aria-labelledby="home-percentage-title">
+            <h2 id="home-percentage-title">Percentage</h2>
+            <PercentageChartDemo :data="homeData.percentage" />
+          </section>
+
+          <section class="home-chart" aria-labelledby="home-donut-title">
+            <h2 id="home-donut-title">Donut</h2>
+            <DonutChartDemo :data="homeData.donut" />
+          </section>
+        </div>
       </section>
     </section>
 
@@ -463,6 +498,7 @@ watch(source, scheduleHighlight)
               v-if="result.data && activePage === 'percentage'"
               :data="result.data"
             />
+            <DonutChartDemo v-else-if="result.data && activePage === 'donut'" :data="result.data" />
             <LineChart
               v-else-if="result.data && activePage === 'line'"
               :data="result.data"

@@ -1,5 +1,6 @@
 export { default as BarChart } from './components/cartesian/BarChart.vue'
-export { default as LineChart } from './components/cartesian/LineChart.vue'
+export { default as DonutChart } from './components/donut/DonutChart.vue'
 export { default as HeatmapChart } from './components/heatmap/HeatmapChart.vue'
+export { default as LineChart } from './components/cartesian/LineChart.vue'
 export { default as PercentageChart } from './components/percentage/PercentageChart.vue'
 export { default as SankeyChart } from './components/sankey/SankeyChart.vue'

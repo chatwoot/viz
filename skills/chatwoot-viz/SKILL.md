@@ -2,7 +2,7 @@
 name: chatwoot-viz
 description: >
   Build and modify Vue 3 data visualizations with @chatwoot/viz. Use when an
-  application needs responsive bar charts, line charts, percentage charts,
+  application needs responsive bar charts, line charts, aggregate charts,
   heatmaps, or Sankey diagrams; when converting application data into the
   library's chart data shapes; or when implementing chart formatting,
   item-click interactions, accessibility, responsive sizing, or CSS-variable
@@ -17,8 +17,8 @@ metadata:
 # Chatwoot Viz
 
 Use `@chatwoot/viz` to add small, responsive charts to Vue 3.5+ applications.
-The package exports `BarChart`, `LineChart`, `PercentageChart`, `HeatmapChart`,
-and `SankeyChart`.
+The package exports `BarChart`, `DonutChart`, `LineChart`, `PercentageChart`,
+`HeatmapChart`, and `SankeyChart`.
 
 ## Agent protocol
 
@@ -55,7 +55,14 @@ import '@chatwoot/viz/style.css'
 Import only the components needed by the view:
 
 ```js
-import { BarChart, HeatmapChart, LineChart, PercentageChart, SankeyChart } from '@chatwoot/viz'
+import {
+  BarChart,
+  DonutChart,
+  HeatmapChart,
+  LineChart,
+  PercentageChart,
+  SankeyChart,
+} from '@chatwoot/viz'
 ```
 
 ## Choose a chart
@@ -63,6 +70,7 @@ import { BarChart, HeatmapChart, LineChart, PercentageChart, SankeyChart } from 
 | Component         | Use for                                                                | Avoid when                                                        |
 | ----------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------- |
 | `BarChart`        | Comparing values across discrete categories; grouped or stacked totals | The primary task is reading change over a dense timeline          |
+| `DonutChart`      | Circular part-to-whole breakdowns with a useful center                 | Precise comparison across many small segments is primary          |
 | `LineChart`       | Trends across ordered categories shared by one or more series          | Categories are unrelated or cumulative composition matters most   |
 | `PercentageChart` | Compact part-to-whole breakdowns in a single bar                       | Values can be negative or do not share one meaningful total       |
 | `HeatmapChart`    | Values at row/column intersections, density, schedules, cohorts        | Exact values must be compared without hover/focus                 |
@@ -143,11 +151,12 @@ Scale options use `yTicks`, then `yStepSize`, then automatic ticks based on
 or `yStepSize` only when the product requires an exact, comparable scale.
 Zero-only data uses a non-negative `0` to `1` inferred fallback domain.
 
-## Percentage charts
+## Aggregate charts
 
-Pass raw, non-negative segment values. Without `total`, their sum is treated as
-100%. With a positive `total`, each width is calculated against that capacity
-and a positive remainder is rendered automatically as `Unused`.
+`PercentageChart` and `DonutChart` accept the same raw, non-negative segment
+values. Without `total`, their sum is treated as 100%. With a positive `total`,
+each share is calculated against that capacity and a positive remainder is
+rendered automatically as `Unused`.
 
 ```vue
 <script setup>
@@ -176,12 +185,22 @@ const formatStorage = (value) => `${value} GB`
 </template>
 ```
 
+Use the same data in a donut and keep center content in its scoped slot:
+
+```vue
+<DonutChart :data="data" :format-value="formatStorage" aria-label="Storage usage by type">
+  <template #center="{ used }">
+    <strong>{{ formatStorage(used) }} used</strong>
+  </template>
+</DonutChart>
+```
+
 This produces `20%`, `6%`, and `24%` supplied segments plus a derived 50%
 unused segment. Tooltips show the formatted raw value and percentage, such as
 `250 GB · 50%`. Raw values remain available in legend slots and item-click
 payloads.
 
-Percentage rules:
+Aggregate rules:
 
 - Values above an explicit total produce an error instead of being rescaled.
 - Invalid and negative values are skipped. An inferred chart needs at least one
@@ -192,7 +211,7 @@ Percentage rules:
 - The default legend is predictable: color swatch, label, and formatted
   percentage. Use the `legend-item` slot for business-specific arrangements
   such as raw storage values, rating icons, or supporting counts.
-- The chart retains the legend's `<ul>` and `<li>` semantics. Slot props are
+- Both charts retain the legend's `<ul>` and `<li>` semantics. Slot props are
   `item`, `id`, `index`, `label`, `color`, `value`, `percentage`,
   `formattedValue`, `formattedPercentage`, `description`, and `isRemainder`.
 - A segment object's optional `description` renders as muted tooltip text and
@@ -201,8 +220,12 @@ Percentage rules:
 - Keep headings, summaries, units, precision, icons, and other business
   presentation in the consuming view. Use the `remainderLabel` and
   `remainderColor` props to customize the derived segment.
-- `showTooltip`, `showLegend`, `barHeight` (`24`), `barGap` (`2`), and
-  `barRadius` (`4`) control display.
+- `showTooltip` and `showLegend` control both charts. Percentage geometry uses
+  `barHeight` (`24`), `barGap` (`2`), and `barRadius` (`4`). Donut geometry
+  uses `diameter` (`200`), `thickness` (`24`), a constant-width `segmentGap` (`3`), and
+  `cornerRadius` (`2`).
+- Donut's optional `center` slot receives `total`, `used`, `remainder`, and
+  `hasExplicitTotal`.
 
 ## Heatmaps
 
@@ -323,13 +346,13 @@ function selectItem(payload) {
 
 Payloads:
 
-| Chart       | Common payload fields                                                   | Additional fields                                                                        |
-| ----------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| Bar, Line   | `item`, `value`, `formattedValue`, `event`                              | Original `category` and `series`; ids, labels, and indexes                               |
-| Heatmap     | `itemType: "cell"`, `item`, `value`, `formattedValue`, `event`          | Original `row` and `column`; ids, labels, descriptions, and indexes                      |
-| Percentage  | `item`, `value`, `formattedValue`, `event`, `index`                     | Calculated percentage, formatted percentage, description, id, label, and remainder state |
-| Sankey node | `itemType: "node"`, `item`, `value`, `formattedValue`, `event`, `index` | `id`, `label`                                                                            |
-| Sankey link | `itemType: "link"`, `item`, `value`, `formattedValue`, `event`, `index` | Original source/target nodes plus their ids and labels                                   |
+| Chart             | Common payload fields                                                   | Additional fields                                                                        |
+| ----------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Bar, Line         | `item`, `value`, `formattedValue`, `event`                              | Original `category` and `series`; ids, labels, and indexes                               |
+| Heatmap           | `itemType: "cell"`, `item`, `value`, `formattedValue`, `event`          | Original `row` and `column`; ids, labels, descriptions, and indexes                      |
+| Percentage, Donut | `item`, `value`, `formattedValue`, `event`, `index`                     | Calculated percentage, formatted percentage, description, id, label, and remainder state |
+| Sankey node       | `itemType: "node"`, `item`, `value`, `formattedValue`, `event`, `index` | `id`, `label`                                                                            |
+| Sankey link       | `itemType: "link"`, `item`, `value`, `formattedValue`, `event`, `index` | Original source/target nodes plus their ids and labels                                   |
 
 Prefer point or cell objects when a handler needs metadata; `item` preserves
 the original object. Keep navigation and application state changes in the
@@ -357,17 +380,18 @@ records solely to rename fields:
   point object's optional `description` field.
 - Heatmap: `columnId`, `columnLabel`, `rowId`, `rowLabel`, `rowDescription`,
   `rowValues`, `cellValue`, and `cellColor`.
-- Percentage: `segmentId`, `segmentLabel`, `segmentValue`, and `segmentColor`.
+- Percentage and Donut: `segmentId`, `segmentLabel`, `segmentValue`, and
+  `segmentColor`.
 - Sankey: `nodeId`, `nodeLabel`, `nodeValue`, `nodeColor`, `linkValue`, and
   `linkColor`.
 
 ## Responsiveness, accessibility, and theming
 
 Bar, Line, and Sankey charts observe their container width and recalculate
-their layout. Percentage charts fill their container with CSS. Give the parent
-a real width and `min-width: 0` when it is inside a flex or grid layout. `width`
-on charts that accept it is a fallback before measurement, not normally a fixed
-rendered width.
+their layout. Aggregate charts scale to their container with CSS. Give the
+parent a real width and `min-width: 0` when it is inside a flex or grid layout.
+`width` on charts that accept it is a fallback before measurement, not normally
+a fixed rendered width.
 
 Use data-level colors for individual series, nodes, links, and cells. Use
 `--cw-viz-*` CSS custom properties for shared presentation:
@@ -379,6 +403,8 @@ Use data-level colors for individual series, nodes, links, and cells. Use
   --cw-viz-bar-tooltip-background: var(--color-surface);
   --cw-viz-heatmap-level-0-color: var(--color-surface-subtle);
   --cw-viz-heatmap-level-4-color: var(--color-primary);
+  --cw-viz-donut-remainder-color: var(--color-surface-subtle);
+  --cw-viz-donut-tooltip-background: var(--color-surface);
   --cw-viz-percentage-remainder-color: var(--color-surface-subtle);
   --cw-viz-percentage-tooltip-background: var(--color-surface);
 }
@@ -396,7 +422,7 @@ a useful `aria-label`, even though every component has a generic default.
 | Passing `show-tooltip="false"`                         | Bind the Boolean: `:show-tooltip="false"`                         |
 | Using series arrays of different meaning/order         | Align every point to the same category index                      |
 | Calculating dates inside `HeatmapChart`                | Localize and label rows/columns in the client                     |
-| Passing precomputed percentage labels                  | Pass raw values and let `PercentageChart` calculate them          |
+| Passing precomputed percentage labels                  | Pass raw values and let aggregate charts calculate them           |
 | Letting percentage values exceed an explicit total     | Correct the values or increase the shared total                   |
 | Passing zero/negative Sankey links or cyclic data      | Validate positive flows and a directed acyclic graph              |
 | Passing `format-value="%"` to Sankey                   | Pass a function: `:format-value="(value) => String(value) + '%'"` |
@@ -409,7 +435,7 @@ a useful `aria-label`, even though every component has a generic default.
 After implementation:
 
 1. Run the consuming project's formatter, linter, tests, and production build.
-2. Confirm the number and order of categories, series, percentage segments,
+2. Confirm the number and order of categories, series, aggregate segments,
    rows, columns, nodes, and links against the source data.
 3. Check empty, missing, zero, negative, and unusually large values relevant to
    the selected chart.

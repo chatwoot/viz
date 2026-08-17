@@ -33,6 +33,7 @@ const data = {
 
 - [Overview and development](./playground/docs/index.md)
 - [BarChart](./playground/docs/bar.md)
+- [DonutChart](./playground/docs/donut.md)
 - [HeatmapChart](./playground/docs/heatmap.md)
 - [LineChart](./playground/docs/line.md)
 - [PercentageChart](./playground/docs/percentage.md)
@@ -54,7 +55,7 @@ pnpm install
 pnpm dev
 ```
 
-Open `/` for the chart gallery or `/bar`, `/heatmap`, `/line`, `/percentage`, and `/sankey` for editable stories.
+Open `/` for the chart gallery or `/bar`, `/donut`, `/heatmap`, `/line`, `/percentage`, and `/sankey` for editable stories.
 
 ## License
 

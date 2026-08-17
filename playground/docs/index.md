@@ -7,6 +7,7 @@
 | Component         | Use it for                        | Guide                               |
 | ----------------- | --------------------------------- | ----------------------------------- |
 | `BarChart`        | Grouped or stacked comparisons    | [Bar chart](./bar.md)               |
+| `DonutChart`      | Circular part-to-whole breakdowns | [Donut chart](./donut.md)           |
 | `HeatmapChart`    | Row-and-column matrices           | [Heatmap](./heatmap.md)             |
 | `LineChart`       | Multi-series trends               | [Line chart](./line.md)             |
 | `PercentageChart` | Compact part-to-whole breakdowns  | [Percentage chart](./percentage.md) |
@@ -29,7 +30,14 @@ import '@chatwoot/viz/style.css'
 Components are exported individually from the package entry point:
 
 ```js
-import { BarChart, HeatmapChart, LineChart, PercentageChart, SankeyChart } from '@chatwoot/viz'
+import {
+  BarChart,
+  DonutChart,
+  HeatmapChart,
+  LineChart,
+  PercentageChart,
+  SankeyChart,
+} from '@chatwoot/viz'
 ```
 
 Vue is a peer dependency. The library ships as modern ESM so a consuming application can tree-shake unused component exports.
@@ -42,6 +50,7 @@ Every chart accepts `formatValue`. Pass a suffix, a `{value}` template, or a fun
 <LineChart :data="data" format-value="%" />
 <BarChart :data="data" format-value="{value} conversations" />
 <HeatmapChart :data="data" :format-value="(value) => `${value}%`" />
+<DonutChart :data="data" format-value=" GB" />
 <PercentageChart :data="data" format-value=" GB" />
 ```
 
@@ -56,6 +65,7 @@ Every chart exposes `onItemClick` through Vue's `@item-click` syntax. Interactiv
 Payloads reflect each chart's data model. See the chart-specific interaction sections:
 
 - [Bar chart interactions](./bar.md#item-clicks)
+- [Donut chart interactions](./donut.md#item-clicks)
 - [Heatmap interactions](./heatmap.md#item-clicks)
 - [Line chart interactions](./line.md#item-clicks)
 - [Percentage chart interactions](./percentage.md#item-clicks)
@@ -72,7 +82,7 @@ pnpm install
 pnpm dev
 ```
 
-The Vite playground provides a gallery at `/` and editable stories at `/bar`, `/heatmap`, `/line`, `/percentage`, and `/sankey`. Each story includes editable JSON, saved drafts, a resizable canvas, and its chart documentation.
+The Vite playground provides a gallery at `/` and editable stories at `/bar`, `/donut`, `/heatmap`, `/line`, `/percentage`, and `/sankey`. Donut and Percentage are grouped as aggregate charts. Each story includes editable JSON, saved drafts, a resizable canvas, and its chart documentation.
 
 ## Development
 
