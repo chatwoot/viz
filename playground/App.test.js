@@ -81,13 +81,15 @@ describe('playground', () => {
     const wrapper = mount(App)
 
     expect(wrapper.findComponent({ name: 'PercentageChartDemo' }).exists()).toBe(true)
-    expect(wrapper.findAllComponents({ name: 'PercentageChart' })).toHaveLength(2)
+    expect(wrapper.findAllComponents({ name: 'PercentageChart' })).toHaveLength(3)
     expect(wrapper.get('a[href="/percentage"]').attributes('aria-current')).toBe('page')
     expect(wrapper.get('textarea').element.value).toBe(DEFAULT_PERCENTAGE_DATA)
-    expect(JSON.parse(wrapper.get('textarea').element.value).examples[1].segments[0]).toMatchObject(
-      { label: 'Documents', value: 100 },
-    )
-    expect(wrapper.findAll('.cw-viz-percentage__segment')).toHaveLength(7)
+    const examples = JSON.parse(wrapper.get('textarea').element.value).examples
+    expect(examples[1].segments[0]).toMatchObject({ label: 'Documents', value: 100 })
+    expect(examples[1]).not.toHaveProperty('unit')
+    expect(examples[2]).not.toHaveProperty('percentageDigits')
+    expect(examples[2].segments[0]).not.toHaveProperty('icon')
+    expect(wrapper.findAll('.cw-viz-percentage__segment')).toHaveLength(12)
     expect(wrapper.get('.cw-viz-percentage__segment--remainder').attributes('style')).toContain(
       '--cw-viz-percentage-segment-size: 50',
     )
@@ -110,6 +112,10 @@ describe('playground', () => {
     await firstSegment.trigger('blur')
     await segments[3].trigger('pointerenter')
     expect(wrapper.get('[role="tooltip"]').text()).toContain('100 GB · 20%')
+
+    expect(wrapper.text()).toContain('Rating distribution')
+    expect(wrapper.text()).toContain('32.29%')
+    expect(wrapper.text()).toContain('(62)')
   })
 
   it('controls stacked and time-series bar options from the preview toolbar', async () => {
@@ -276,9 +282,16 @@ describe('playground', () => {
     const savedPercentage = {
       examples: [
         {
-          id: 'saved',
-          title: 'Saved percentage',
-          summary: 'Saved summary',
+          id: 'credit-usage',
+          segments: [],
+        },
+        {
+          id: 'storage',
+          total: 1,
+          segments: [],
+        },
+        {
+          id: 'rating-distribution',
           segments: [],
         },
       ],

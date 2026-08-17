@@ -101,7 +101,10 @@ const description = computed(() => {
   if (layout.value.error) return layout.value.error
 
   return layout.value.segments
-    .map((segment) => `${segment.label}: ${segment.tooltipValue}`)
+    .map(
+      (segment) =>
+        `${segment.label}: ${segment.tooltipValue}${segment.description ? `. ${segment.description}` : ''}`,
+    )
     .join(', ')
 })
 
@@ -116,6 +119,7 @@ function openTooltip(segment, event) {
   activeTooltip.value = {
     horizontalPosition:
       x < rootBounds.width * 0.25 ? 'start' : x > rootBounds.width * 0.75 ? 'end' : 'center',
+    description: segment.description,
     label: segment.label,
     segmentIndex: segment.index,
     value: segment.tooltipValue,
@@ -137,6 +141,7 @@ function selectSegment(segment, event) {
     event,
     formattedPercentage: segment.formattedPercentage,
     formattedValue: segment.formattedValue,
+    description: segment.description,
     id: segment.id,
     index: segment.index,
     isRemainder: segment.isRemainder,
@@ -159,11 +164,6 @@ function selectSegment(segment, event) {
   >
     <p class="cw-viz-percentage__description">{{ description }}</p>
 
-    <header v-if="layout.title || layout.summary" class="cw-viz-percentage__header">
-      <p v-if="layout.title" class="cw-viz-percentage__title">{{ layout.title }}</p>
-      <p v-if="layout.summary" class="cw-viz-percentage__summary">{{ layout.summary }}</p>
-    </header>
-
     <p v-if="layout.error" class="cw-viz-percentage__empty">{{ layout.error }}</p>
 
     <template v-else>
@@ -181,7 +181,7 @@ function selectSegment(segment, event) {
             '--cw-viz-percentage-segment-color': segment.color,
             '--cw-viz-percentage-segment-size': segment.percentage,
           }"
-          :aria-label="`${segment.label}: ${segment.tooltipValue}`"
+          :aria-label="`${segment.label}: ${segment.tooltipValue}${segment.description ? `. ${segment.description}` : ''}`"
           @pointerenter="openTooltip(segment, $event)"
           @pointerleave="closeTooltip"
           @focus="openTooltip(segment, $event)"
@@ -198,8 +198,13 @@ function selectSegment(segment, event) {
         :style="{ left: `${tooltip.x}px`, top: `${tooltip.y}px` }"
         role="tooltip"
       >
-        <span>{{ tooltip.label }}</span>
-        <strong>{{ tooltip.value }}</strong>
+        <div class="cw-viz-percentage__tooltip-main">
+          <span>{{ tooltip.label }}</span>
+          <strong>{{ tooltip.value }}</strong>
+        </div>
+        <span v-if="tooltip.description" class="cw-viz-percentage__tooltip-description">
+          {{ tooltip.description }}
+        </span>
       </div>
 
       <ul v-if="showLegend" class="cw-viz-percentage__legend">
@@ -210,16 +215,31 @@ function selectSegment(segment, event) {
             'cw-viz-percentage__legend-item--remainder': segment.isRemainder,
           }"
         >
-          <span
-            class="cw-viz-percentage__swatch"
-            :class="{
-              'cw-viz-percentage__swatch--remainder': segment.isRemainder,
-            }"
-            :style="{ '--cw-viz-percentage-segment-color': segment.color }"
-            aria-hidden="true"
-          />
-          <span>{{ segment.label }}</span>
-          <strong>{{ segment.legendValue }}</strong>
+          <slot
+            name="legend-item"
+            :color="segment.color"
+            :description="segment.description"
+            :formatted-percentage="segment.formattedPercentage"
+            :formatted-value="segment.formattedValue"
+            :id="segment.id"
+            :index="segment.index"
+            :is-remainder="segment.isRemainder"
+            :item="segment.datum"
+            :label="segment.label"
+            :percentage="segment.percentage"
+            :value="segment.value"
+          >
+            <span
+              class="cw-viz-percentage__swatch"
+              :class="{
+                'cw-viz-percentage__swatch--remainder': segment.isRemainder,
+              }"
+              :style="{ '--cw-viz-percentage-segment-color': segment.color }"
+              aria-hidden="true"
+            />
+            <span>{{ segment.label }}</span>
+            <strong>{{ segment.formattedPercentage }}</strong>
+          </slot>
         </li>
       </ul>
     </template>
@@ -245,33 +265,6 @@ function selectSegment(segment, event) {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
-}
-
-.cw-viz-percentage__header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 0.875rem;
-}
-
-.cw-viz-percentage__title,
-.cw-viz-percentage__summary {
-  margin: 0;
-  line-height: 1.3;
-}
-
-.cw-viz-percentage__title {
-  color: var(--cw-viz-percentage-title-color, #1c2024);
-  font-size: var(--cw-viz-percentage-title-font-size, 14px);
-  font-weight: 600;
-}
-
-.cw-viz-percentage__summary {
-  color: var(--cw-viz-percentage-summary-color, #60646c);
-  font-size: var(--cw-viz-percentage-summary-font-size, 12px);
-  font-variant-numeric: tabular-nums;
-  text-align: right;
 }
 
 .cw-viz-percentage__bar {
@@ -336,12 +329,10 @@ span.cw-viz-percentage__segment {
 .cw-viz-percentage__tooltip {
   position: absolute;
   z-index: 3;
-  display: flex;
+  display: grid;
   width: max-content;
   max-width: min(18rem, calc(100% - 1rem));
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  gap: 0.25rem;
   padding: 0.625rem 0.75rem;
   border: 1px solid var(--cw-viz-percentage-tooltip-border-color, #e0e1e6);
   border-radius: 0.375rem;
@@ -352,6 +343,19 @@ span.cw-viz-percentage__segment {
   line-height: 1.3;
   pointer-events: none;
   transform: translate(-50%, calc(-100% - 0.5rem));
+}
+
+.cw-viz-percentage__tooltip-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.cw-viz-percentage__tooltip-description {
+  color: var(--cw-viz-percentage-tooltip-description-color, #8b8d98);
+  font-size: var(--cw-viz-percentage-tooltip-description-font-size, 11px);
+  overflow-wrap: anywhere;
 }
 
 .cw-viz-percentage__tooltip--start {
@@ -380,10 +384,9 @@ span.cw-viz-percentage__segment {
 }
 
 .cw-viz-percentage__legend li {
-  display: grid;
+  display: flex;
   align-items: center;
   gap: 0.375rem;
-  grid-template-columns: auto auto auto;
   white-space: nowrap;
 }
 
@@ -418,18 +421,6 @@ span.cw-viz-percentage__segment {
   color: var(--cw-viz-percentage-label-color, #60646c);
   font-size: 12px;
   text-align: center;
-}
-
-@container (max-width: 440px) {
-  .cw-viz-percentage__header {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .cw-viz-percentage__summary {
-    text-align: left;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -12,6 +12,7 @@ function roundedPercentage(value) {
 function createSegment({
   color,
   datum,
+  description,
   formatPercentage,
   formatValue,
   id,
@@ -30,6 +31,7 @@ function createSegment({
   return {
     color,
     datum,
+    description: String(description ?? ''),
     formattedPercentage,
     formattedValue,
     id: String(id),
@@ -37,7 +39,6 @@ function createSegment({
     isRemainder,
     key: `${String(id)}:${index}`,
     label: String(label ?? ''),
-    legendValue: showRawValue ? formattedValue : formattedPercentage,
     percentage,
     sourceIndex,
     tooltipValue: showRawValue ? `${formattedValue} · ${formattedPercentage}` : formattedPercentage,
@@ -67,7 +68,7 @@ export function createPercentageLayout({
       accessorValue(segmentColor, datum, sourceIndex) ||
       seriesCssColor('percentage', id, sourceIndex)
 
-    return [{ color, datum, id, label, sourceIndex, value }]
+    return [{ color, datum, description: datum?.description, id, label, sourceIndex, value }]
   })
   const used = normalizedSegments.reduce((sum, segment) => sum + segment.value, 0)
   const hasExplicitTotal = data?.total !== undefined && data?.total !== null
@@ -77,7 +78,6 @@ export function createPercentageLayout({
     return {
       error: 'Percentage chart segment total must be a finite number.',
       segments: [],
-      title: String(data?.title ?? ''),
     }
   }
 
@@ -85,7 +85,6 @@ export function createPercentageLayout({
     return {
       error: 'Percentage chart total must be a positive number.',
       segments: [],
-      title: String(data?.title ?? ''),
     }
   }
 
@@ -93,7 +92,6 @@ export function createPercentageLayout({
     return {
       error: 'Percentage chart data requires at least one positive segment value.',
       segments: [],
-      title: String(data?.title ?? ''),
     }
   }
 
@@ -104,37 +102,39 @@ export function createPercentageLayout({
     return {
       error: 'Percentage chart segment values cannot exceed the total.',
       segments: [],
-      title: String(data?.title ?? ''),
       total,
       used,
     }
   }
 
-  const segments = normalizedSegments.map((segment, index) =>
-    createSegment({
+  const segments = normalizedSegments.map((segment, index) => {
+    const percentage = (segment.value / total) * 100
+    const showRawValue = hasExplicitTotal || segment.value !== roundedPercentage(percentage)
+
+    return createSegment({
       ...segment,
       formatPercentage,
       formatValue,
       index,
       isRemainder: false,
-      percentage: (segment.value / total) * 100,
-      showRawValue:
-        hasExplicitTotal || segment.value !== roundedPercentage((segment.value / total) * 100),
-    }),
-  )
+      percentage,
+      showRawValue,
+    })
+  })
   const remainder = Math.max(total - used, 0)
 
   if (hasExplicitTotal && remainder > tolerance) {
     segments.push(
       createSegment({
-        color: data?.remainderColor || remainderColor,
+        color: remainderColor,
         datum: null,
+        description: '',
         formatPercentage,
         formatValue,
         id: '__remainder',
         index: segments.length,
         isRemainder: true,
-        label: data?.remainderLabel ?? remainderLabel,
+        label: remainderLabel,
         percentage: (remainder / total) * 100,
         showRawValue: true,
         sourceIndex: sourceSegments.length,
@@ -143,22 +143,11 @@ export function createPercentageLayout({
     )
   }
 
-  const formattedTotal = formatChartValue(formatValue, total, data)
-  const formattedUsed = formatChartValue(formatValue, used, data)
-  const summary =
-    data?.summary !== undefined
-      ? String(data.summary)
-      : hasExplicitTotal
-        ? `${formattedUsed} of ${formattedTotal} used`
-        : `${formatChartValue(formatPercentage, 100, data)} allocated`
-
   return {
     error: '',
     hasExplicitTotal,
     remainder,
     segments,
-    summary,
-    title: String(data?.title ?? ''),
     total,
     used,
   }

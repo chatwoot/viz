@@ -41,7 +41,6 @@ const percentageData = {
   examples: [
     {
       id: 'credit-usage',
-      title: 'Credit usage',
       segments: [
         {
           id: 'assistant',
@@ -65,9 +64,7 @@ const percentageData = {
     },
     {
       id: 'storage',
-      title: 'Storage',
       total: 500,
-      unit: 'GB',
       segments: [
         {
           id: 'documents',
@@ -86,6 +83,46 @@ const percentageData = {
           label: 'Apps',
           value: 120,
           color: '#2f80ed',
+        },
+      ],
+    },
+    {
+      id: 'rating-distribution',
+      segments: [
+        {
+          id: 'excellent',
+          label: 'Excellent',
+          value: 62,
+          color: '#3ecf4c',
+          description: 'Based on 62 responses',
+        },
+        {
+          id: 'good',
+          label: 'Good',
+          value: 27,
+          color: '#6bd36e',
+          description: 'Based on 27 responses',
+        },
+        {
+          id: 'average',
+          label: 'Average',
+          value: 19,
+          color: '#ffed55',
+          description: 'Based on 19 responses',
+        },
+        {
+          id: 'fair',
+          label: 'Fair',
+          value: 9,
+          color: '#ffbf2f',
+          description: 'Based on 9 responses',
+        },
+        {
+          id: 'poor',
+          label: 'Poor',
+          value: 75,
+          color: '#ffad28',
+          description: 'Based on 75 responses',
         },
       ],
     },

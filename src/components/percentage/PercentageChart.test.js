@@ -1,3 +1,4 @@
+import { h } from 'vue'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -9,7 +10,6 @@ const creditData = {
     { id: 'tasks', label: 'Tasks', value: 30, color: '#ab4aba' },
     { id: 'copilot', label: 'Copilot', value: 30, color: '#009688' },
   ],
-  title: 'Credit usage',
 }
 
 describe('PercentageChart', () => {
@@ -20,8 +20,6 @@ describe('PercentageChart', () => {
     const segments = wrapper.findAll('.cw-viz-percentage__segment')
 
     expect(wrapper.attributes('aria-label')).toBe('Credit usage breakdown')
-    expect(wrapper.get('.cw-viz-percentage__title').text()).toBe('Credit usage')
-    expect(wrapper.get('.cw-viz-percentage__summary').text()).toBe('100% allocated')
     expect(segments).toHaveLength(3)
     expect(segments[0].attributes('style')).toContain('--cw-viz-percentage-segment-size: 40')
     expect(segments[0].attributes('aria-label')).toBe('Assistant: 40%')
@@ -30,7 +28,7 @@ describe('PercentageChart', () => {
     )
   })
 
-  it('calculates and renders the remainder for an explicit total', async () => {
+  it('calculates the remainder and exposes raw values to a custom legend', async () => {
     const wrapper = mount(PercentageChart, {
       props: {
         data: {
@@ -39,10 +37,17 @@ describe('PercentageChart', () => {
             { id: 'music', label: 'Music', value: 30 },
             { id: 'apps', label: 'Apps', value: 120 },
           ],
-          title: 'Storage',
           total: 500,
         },
         formatValue: ' GB',
+      },
+      slots: {
+        'legend-item': ({ formattedValue, isRemainder, label }) =>
+          h(
+            'span',
+            { class: ['custom-legend', { 'custom-legend--remainder': isRemainder }] },
+            `${label} ${formattedValue}`,
+          ),
       },
     })
 
@@ -50,14 +55,31 @@ describe('PercentageChart', () => {
     expect(wrapper.get('.cw-viz-percentage__segment--remainder').attributes('style')).toContain(
       '--cw-viz-percentage-segment-size: 50',
     )
-    expect(wrapper.get('.cw-viz-percentage__summary').text()).toBe('250 GB of 500 GB used')
-    expect(wrapper.findAll('.cw-viz-percentage__legend li')[0].text()).toContain('100 GB')
-    expect(wrapper.findAll('.cw-viz-percentage__legend li')[0].text()).not.toContain('20%')
-    expect(wrapper.get('.cw-viz-percentage__legend-item--remainder').text()).toContain('250 GB')
-    expect(wrapper.get('.cw-viz-percentage__legend-item--remainder').text()).not.toContain('50%')
+    expect(wrapper.findAll('.custom-legend').map((item) => item.text())).toEqual([
+      'Documents 100 GB',
+      'Music 30 GB',
+      'Apps 120 GB',
+      'Unused 250 GB',
+    ])
+    expect(wrapper.get('.custom-legend--remainder').text()).toBe('Unused 250 GB')
 
     await wrapper.findAll('.cw-viz-percentage__segment')[0].trigger('pointerenter')
     expect(wrapper.get('[role="tooltip"]').text()).toContain('100 GB · 20%')
+  })
+
+  it('uses calculated percentages in the default legend for fixed totals', () => {
+    const wrapper = mount(PercentageChart, {
+      props: {
+        data: {
+          segments: [{ id: 'used', label: 'Used', value: 100 }],
+          total: 500,
+        },
+      },
+    })
+
+    expect(wrapper.findAll('.cw-viz-percentage__legend strong').map((item) => item.text())).toEqual(
+      ['20%', '80%'],
+    )
   })
 
   it('shows a tooltip on pointer hover and keyboard focus', async () => {
@@ -76,6 +98,70 @@ describe('PercentageChart', () => {
 
     await wrapper.setProps({ showTooltip: false })
     expect(wrapper.find('[role="tooltip"]').exists()).toBe(false)
+  })
+
+  it('exposes legend slot props and renders segment descriptions in tooltips', async () => {
+    const icons = { average: '😐', excellent: '😍', fair: '😑', good: '😀', poor: '😞' }
+    const wrapper = mount(PercentageChart, {
+      props: {
+        data: {
+          segments: [
+            {
+              color: '#3ecf4c',
+              description: 'Based on 62 responses',
+              id: 'excellent',
+              label: 'Excellent',
+              value: 62,
+            },
+            { color: '#6bd36e', id: 'good', label: 'Good', value: 27 },
+            { color: '#ffed55', id: 'average', label: 'Average', value: 19 },
+            { color: '#ffbf2f', id: 'fair', label: 'Fair', value: 9 },
+            { color: '#ffad28', id: 'poor', label: 'Poor', value: 75 },
+          ],
+        },
+        formatPercentage: (value) => `${Number(value).toFixed(2)}%`,
+      },
+      slots: {
+        'legend-item': ({ description, formattedPercentage, formattedValue, id, label }) => [
+          h('span', { class: 'custom-marker' }, icons[id]),
+          h('span', { class: 'custom-label' }, label),
+          h('strong', { class: 'custom-percentage' }, formattedPercentage),
+          h('span', { class: 'custom-value', title: description }, `(${formattedValue})`),
+        ],
+      },
+    })
+
+    expect(wrapper.findAll('.custom-marker').map((icon) => icon.text())).toEqual([
+      '😍',
+      '😀',
+      '😐',
+      '😑',
+      '😞',
+    ])
+    expect(wrapper.findAll('.custom-percentage').map((item) => item.text())).toEqual([
+      '32.29%',
+      '14.06%',
+      '9.90%',
+      '4.69%',
+      '39.06%',
+    ])
+    expect(wrapper.findAll('.custom-value').map((detail) => detail.text())).toEqual([
+      '(62)',
+      '(27)',
+      '(19)',
+      '(9)',
+      '(75)',
+    ])
+    expect(wrapper.get('.custom-value').attributes('title')).toBe('Based on 62 responses')
+
+    await wrapper.findAll('.cw-viz-percentage__segment')[0].trigger('pointerenter')
+    expect(wrapper.get('[role="tooltip"]').text()).toContain('62 · 32.29%')
+    expect(wrapper.get('.cw-viz-percentage__tooltip-description').text()).toBe(
+      'Based on 62 responses',
+    )
+    expect(wrapper.findAll('.cw-viz-percentage__segment')[0].attributes('aria-label')).toContain(
+      'Based on 62 responses',
+    )
   })
 
   it('can disable the tooltip and legend', () => {
@@ -99,6 +185,7 @@ describe('PercentageChart', () => {
     expect(onItemClick.mock.calls[0][0]).toMatchObject({
       formattedPercentage: '40%',
       formattedValue: '40',
+      description: '',
       id: 'assistant',
       index: 0,
       isRemainder: false,

@@ -9,7 +9,6 @@ const options = {
       { id: 'tasks', label: 'Tasks', value: 30, color: '#ab4aba' },
       { id: 'copilot', label: 'Copilot', value: 30, color: '#009688' },
     ],
-    title: 'Credit usage',
   },
   formatPercentage: '%',
   formatValue: (value) => Number(value).toLocaleString(),
@@ -29,9 +28,12 @@ describe('createPercentageLayout', () => {
     expect(layout.total).toBe(100)
     expect(layout.used).toBe(100)
     expect(layout.remainder).toBe(0)
-    expect(layout.summary).toBe('100% allocated')
     expect(layout.segments.map((segment) => segment.percentage)).toEqual([40, 30, 30])
-    expect(layout.segments.map((segment) => segment.legendValue)).toEqual(['40%', '30%', '30%'])
+    expect(layout.segments.map((segment) => segment.formattedPercentage)).toEqual([
+      '40%',
+      '30%',
+      '30%',
+    ])
     expect(layout.segments.map((segment) => segment.tooltipValue)).toEqual(['40%', '30%', '30%'])
   })
 
@@ -44,7 +46,6 @@ describe('createPercentageLayout', () => {
           { id: 'music', label: 'Music', value: 30 },
           { id: 'apps', label: 'Apps', value: 120 },
         ],
-        title: 'Storage',
         total: 500,
       },
       formatValue: ' GB',
@@ -53,9 +54,8 @@ describe('createPercentageLayout', () => {
     expect(layout.total).toBe(500)
     expect(layout.used).toBe(250)
     expect(layout.remainder).toBe(250)
-    expect(layout.summary).toBe('250 GB of 500 GB used')
     expect(layout.segments.map((segment) => segment.percentage)).toEqual([20, 6, 24, 50])
-    expect(layout.segments.map((segment) => segment.legendValue)).toEqual([
+    expect(layout.segments.map((segment) => segment.formattedValue)).toEqual([
       '100 GB',
       '30 GB',
       '120 GB',
@@ -84,7 +84,6 @@ describe('createPercentageLayout', () => {
     })
 
     expect(layout.error).toBe('')
-    expect(layout.summary).toBe('0 GB of 500 GB used')
     expect(layout.segments).toHaveLength(1)
     expect(layout.segments[0]).toMatchObject({ isRemainder: true, percentage: 100, value: 500 })
   })
@@ -111,6 +110,35 @@ describe('createPercentageLayout', () => {
       label: 'One',
     })
     expect(layout.segments[0].percentage).toBeCloseTo(100 / 3)
+  })
+
+  it('retains raw counts and default descriptions for an inferred distribution', () => {
+    const layout = createPercentageLayout({
+      ...options,
+      data: {
+        segments: [
+          { description: 'Based on 62 responses', label: 'Excellent', value: 62 },
+          { label: 'Good', value: 27 },
+          { label: 'Average', value: 19 },
+          { label: 'Fair', value: 9 },
+          { label: 'Poor', value: 75 },
+        ],
+      },
+      formatPercentage: (value) => `${Number(value).toFixed(2)}%`,
+    })
+
+    expect(layout.segments.map((segment) => segment.formattedPercentage)).toEqual([
+      '32.29%',
+      '14.06%',
+      '9.90%',
+      '4.69%',
+      '39.06%',
+    ])
+    expect(layout.segments[0]).toMatchObject({
+      description: 'Based on 62 responses',
+      formattedValue: '62',
+      tooltipValue: '62 · 32.29%',
+    })
   })
 
   it('skips invalid and negative values', () => {
