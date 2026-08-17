@@ -154,7 +154,6 @@ and a positive remainder is rendered automatically as `Unused`.
 import { PercentageChart } from '@chatwoot/viz'
 
 const data = {
-  title: 'Storage',
   total: 500,
   segments: [
     { id: 'documents', label: 'Documents', value: 100, color: '#e5484d' },
@@ -162,16 +161,25 @@ const data = {
     { id: 'apps', label: 'Apps', value: 120, color: '#2f80ed' },
   ],
 }
+
+const formatStorage = (value) => `${value} GB`
 </script>
 
 <template>
-  <PercentageChart :data="data" format-value=" GB" aria-label="Storage usage by type" />
+  <PercentageChart :data="data" :format-value="formatStorage" aria-label="Storage usage by type">
+    <template #legend-item="{ color, formattedValue, label }">
+      <span class="legend-swatch" :style="{ backgroundColor: color }" aria-hidden="true" />
+      <span>{{ label }}</span>
+      <strong>{{ formattedValue }}</strong>
+    </template>
+  </PercentageChart>
 </template>
 ```
 
 This produces `20%`, `6%`, and `24%` supplied segments plus a derived 50%
-unused segment. Its legend shows `250 GB`; its tooltip shows `250 GB · 50%`.
-Raw values remain available in item-click payloads.
+unused segment. Tooltips show the formatted raw value and percentage, such as
+`250 GB · 50%`. Raw values remain available in legend slots and item-click
+payloads.
 
 Percentage rules:
 
@@ -181,8 +189,18 @@ Percentage rules:
 - `formatValue` formats raw values; `formatPercentage` formats computed
   percentages. Layout retains full precision and display values round to at
   most two decimal places.
-- `data.summary`, `data.remainderLabel`, and `data.remainderColor` override the
-  generated summary and remainder presentation.
+- The default legend is predictable: color swatch, label, and formatted
+  percentage. Use the `legend-item` slot for business-specific arrangements
+  such as raw storage values, rating icons, or supporting counts.
+- The chart retains the legend's `<ul>` and `<li>` semantics. Slot props are
+  `item`, `id`, `index`, `label`, `color`, `value`, `percentage`,
+  `formattedValue`, `formattedPercentage`, `description`, and `isRemainder`.
+- A segment object's optional `description` renders as muted tooltip text and
+  is included in its accessible label. It uses the `description` field
+  directly; there is no custom description accessor.
+- Keep headings, summaries, units, precision, icons, and other business
+  presentation in the consuming view. Use the `remainderLabel` and
+  `remainderColor` props to customize the derived segment.
 - `showTooltip`, `showLegend`, `barHeight` (`24`), `barGap` (`2`), and
   `barRadius` (`4`) control display.
 
@@ -305,13 +323,13 @@ function selectItem(payload) {
 
 Payloads:
 
-| Chart       | Common payload fields                                                   | Additional fields                                                           |
-| ----------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| Bar, Line   | `item`, `value`, `formattedValue`, `event`                              | Original `category` and `series`; ids, labels, and indexes                  |
-| Heatmap     | `itemType: "cell"`, `item`, `value`, `formattedValue`, `event`          | Original `row` and `column`; ids, labels, descriptions, and indexes         |
-| Percentage  | `item`, `value`, `formattedValue`, `event`, `index`                     | Calculated percentage, formatted percentage, id, label, and remainder state |
-| Sankey node | `itemType: "node"`, `item`, `value`, `formattedValue`, `event`, `index` | `id`, `label`                                                               |
-| Sankey link | `itemType: "link"`, `item`, `value`, `formattedValue`, `event`, `index` | Original source/target nodes plus their ids and labels                      |
+| Chart       | Common payload fields                                                   | Additional fields                                                                        |
+| ----------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Bar, Line   | `item`, `value`, `formattedValue`, `event`                              | Original `category` and `series`; ids, labels, and indexes                               |
+| Heatmap     | `itemType: "cell"`, `item`, `value`, `formattedValue`, `event`          | Original `row` and `column`; ids, labels, descriptions, and indexes                      |
+| Percentage  | `item`, `value`, `formattedValue`, `event`, `index`                     | Calculated percentage, formatted percentage, description, id, label, and remainder state |
+| Sankey node | `itemType: "node"`, `item`, `value`, `formattedValue`, `event`, `index` | `id`, `label`                                                                            |
+| Sankey link | `itemType: "link"`, `item`, `value`, `formattedValue`, `event`, `index` | Original source/target nodes plus their ids and labels                                   |
 
 Prefer point or cell objects when a handler needs metadata; `item` preserves
 the original object. Keep navigation and application state changes in the
