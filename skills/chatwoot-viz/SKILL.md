@@ -262,6 +262,19 @@ const data = {
 </template>
 ```
 
+Use quantile coloring when a skewed distribution makes equal-width linear
+levels uninformative:
+
+```vue
+<HeatmapChart
+  :data="data"
+  :quantiles="[0.2, 0.4, 0.6, 0.8, 0.9, 0.99]"
+  :colors="heatmapColors"
+  zero-color="var(--color-surface-subtle)"
+  aria-label="Conversation volume by weekday and hour"
+/>
+```
+
 Heatmap rules:
 
 - `columns` may contain strings, numbers, or objects. Prefer objects with
@@ -272,10 +285,19 @@ Heatmap rules:
 - A cell object may specify `color` with any CSS color or `var(--token)`.
 - `null`, missing, and non-numeric cells render as empty, non-interactive cells.
 - The color domain is inferred across numeric cells. Pass `domain` when several
-  heatmaps must use the same scale.
-- `colors` supplies the quantized palette, and its length determines the number
-  of levels. It defaults to five CSS-variable-aware colors. Cell colors take
-  precedence over the shared palette.
+  heatmaps must use the same linear scale.
+- Pass percentile cut points from `0` to `1` through `quantiles` for a
+  data-relative scale. Quantile coloring takes precedence over `domain`. Values
+  outside that range are ignored; valid values are deduplicated and sorted.
+- Each quantile cut point creates a bucket boundary. Supply one more color than
+  quantiles to make every bucket distinct. If fewer colors are supplied, the
+  last color handles overflow buckets.
+- Use `zeroColor` for an exact zero-value color. Do not add `0` to `quantiles`
+  for this purpose because the zeroth quantile is the sample minimum, not
+  necessarily zero. Setting `zeroColor` excludes zeroes from the quantile
+  calculation so they do not collapse the non-zero buckets.
+- `colors` defaults to five CSS-variable-aware colors. Cell-level colors and
+  `cellColor` take precedence over `zeroColor` and the shared palette.
 - `cellHeight` (`32`), `cellMinWidth` (`28`), `gap` (`4`), and
   `rowLabelWidth` (`120`) control density. The matrix scrolls horizontally when
   it cannot fit its container.
@@ -422,6 +444,7 @@ a useful `aria-label`, even though every component has a generic default.
 | Passing `show-tooltip="false"`                         | Bind the Boolean: `:show-tooltip="false"`                         |
 | Using series arrays of different meaning/order         | Align every point to the same category index                      |
 | Calculating dates inside `HeatmapChart`                | Localize and label rows/columns in the client                     |
+| Adding `0` to heatmap quantiles for a zero bucket      | Pass `zeroColor`; keep quantiles as percentile cut points         |
 | Passing precomputed percentage labels                  | Pass raw values and let aggregate charts calculate them           |
 | Letting percentage values exceed an explicit total     | Correct the values or increase the shared total                   |
 | Passing zero/negative Sankey links or cyclic data      | Validate positive flows and a directed acyclic graph              |
