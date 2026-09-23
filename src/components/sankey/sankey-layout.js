@@ -278,27 +278,30 @@ export function createSankeyLayout({
     })
   })
 
+  links.forEach((link) => {
+    link.width = Math.max(link.value * scale, MIN_NODE_HEIGHT)
+  })
+
   nodes.forEach((node) => {
     node.sourceLinks.sort((first, second) => first.target.y - second.target.y)
     node.targetLinks.sort((first, second) => first.source.y - second.source.y)
 
-    const sourceWidth = node.sourceLinks.reduce((sum, link) => sum + link.value * scale, 0)
-    const targetWidth = node.targetLinks.reduce((sum, link) => sum + link.value * scale, 0)
+    const sourceWidth = node.sourceLinks.reduce((sum, link) => sum + link.width, 0)
+    const targetWidth = node.targetLinks.reduce((sum, link) => sum + link.width, 0)
     let sourceY = node.y + Math.max((node.height - sourceWidth) / 2, 0)
     let targetY = node.y + Math.max((node.height - targetWidth) / 2, 0)
 
     node.sourceLinks.forEach((link) => {
       link.sourceY = sourceY
-      sourceY += link.value * scale
+      sourceY += link.width
     })
     node.targetLinks.forEach((link) => {
       link.targetY = targetY
-      targetY += link.value * scale
+      targetY += link.width
     })
   })
 
   links.forEach((link) => {
-    link.width = link.value * scale
     link.color = link.color || link.target.color
     link.path = ribbonPath(link)
   })
