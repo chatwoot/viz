@@ -1,6 +1,6 @@
 {
   "name": "@chatwoot/viz",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Tiny Vue chart components for Chatwoot",
   "homepage": "https://github.com/chatwoot/viz#readme",
   "bugs": {
